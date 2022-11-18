@@ -29,7 +29,7 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
                         text=post_msg
                     )
 
-                    response = searchClient.search_offers("Toronto", "Sydney", "2022-12-12")
+                    response = searchClient.search_offers("Toronto", "Sydney", "2023-05-12")
                     if response:
                         post_msg = response
                     else:

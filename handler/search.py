@@ -3,6 +3,7 @@ import logging
 import json
 import pandas as pd
 import os
+from dotenv import load_dotenv
 
 
 class Search:
@@ -47,8 +48,16 @@ class Search:
 
         except Exception as e:
             logging.error(str(repr(e)))
+            return None
         else:
             if response.data:
                 return json.dumps(response.data[0], indent=4)
             else:
                 return None
+
+def main():
+    load_dotenv()
+    searchClient = Search()
+    searchClient.search_offers("Toronto", "Sydney", "2023-05-12")
+
+main()
