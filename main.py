@@ -1,5 +1,6 @@
 import handler.slack as slack
 import handler.rasa as rasa
+import handler.search as search
 import logging
 from slack_sdk.socket_mode.aiohttp import SocketModeClient
 from slack_sdk.socket_mode.response import SocketModeResponse
@@ -16,17 +17,28 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
         # Don't forget having await for method calls
         await client.send_socket_mode_response(response)
 
-        # Add a reaction to the message if it's a new message
         if req.payload["event"]["type"] == "message" and "client_msg_id" in req.payload["event"]:
             try:
                 msg_text = slack.Slack.parseMessageText(req.payload["event"])
                 rasaClient = rasa.Rasa()
-                post_msg = str("Travel intent detected: " + str(rasaClient.IsTravelIntent(rasaClient.Classify(msg_text))))
 
-                await client.web_client.chat_postMessage(
-                    channel=os.getenv('SLACK_CHANNEL'),
-                    text=post_msg
-                )
+                if rasaClient.IsTravelIntent(rasaClient.Classify(msg_text)):
+                    post_msg = "Travel Intent Detected!"
+                    await client.web_client.chat_postMessage(
+                        channel=os.getenv('SLACK_CHANNEL'),
+                        text=post_msg
+                    )
+
+                    response = searchClient.search_offers("Toronto", "Sydney", "2022-12-12")
+                    if response:
+                        post_msg = response
+                    else:
+                        post_msg = "No flight offers found."
+
+                    await client.web_client.chat_postMessage(
+                        channel=os.getenv('SLACK_CHANNEL'),
+                        text=post_msg
+                    )
             except Exception as e:
                 logging.exception(str(repr(e)))
 
@@ -36,6 +48,9 @@ async def main():
     load_dotenv()
 
     slackClient = slack.Slack()
+
+    global searchClient
+    searchClient = search.Search()
 
     # Add a new listener to receive messages from Slack
     # You can add more listeners like this
