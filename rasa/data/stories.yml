@@ -1,30 +1,27 @@
 version: "3.1"
 
 stories:
-
-- story: happy path
+- story: I want to travel from Toronto to Tokyo on 05/25/2023
   steps:
-  - intent: greet
-  - action: utter_greet
-  - intent: mood_great
-  - action: utter_happy
+    - intent: travel
+      entities:
+        - location: Toronto
+          role: origin
+        - location: Tokyo
+          role: destination
+        - date_time: 05/25/2023
 
-- story: sad path 1
+- story: I want to travel to Toronto from Tokyo on 2023/05/25
   steps:
-  - intent: greet
-  - action: utter_greet
-  - intent: mood_unhappy
-  - action: utter_cheer_up
-  - action: utter_did_that_help
-  - intent: affirm
-  - action: utter_happy
+    - intent: travel
+      entities:
+        - location: Toronto
+          role: destination
+        - location: Tokyo
+          role: origin
+        - date_time: 2023/05/25
 
-- story: sad path 2
+- story: Bye
   steps:
-  - intent: greet
-  - action: utter_greet
-  - intent: mood_unhappy
-  - action: utter_cheer_up
-  - action: utter_did_that_help
-  - intent: deny
-  - action: utter_goodbye
+    - intent: travel_stop
+

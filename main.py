@@ -8,6 +8,7 @@ from slack_sdk.socket_mode.request import SocketModeRequest
 import asyncio
 import os
 from dotenv import load_dotenv
+import json
 
 
 async def process(client: SocketModeClient, req: SocketModeRequest):
@@ -22,23 +23,32 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
                 msg_text = slack.Slack.parseMessageText(req.payload["event"])
                 rasaClient = rasa.Rasa()
 
-                if rasaClient.IsTravelIntent(rasaClient.Classify(msg_text)):
+                NLP_info_dict = rasaClient.Classify(msg_text)
+                if rasaClient.IsTravelIntent(NLP_info_dict):
                     post_msg = "Travel Intent Detected!"
                     await client.web_client.chat_postMessage(
                         channel=os.getenv('SLACK_CHANNEL'),
                         text=post_msg
                     )
 
-                    response = searchClient.search_offers("Toronto", "Sydney", "2023-05-12")
-                    if response:
-                        post_msg = response
-                    else:
-                        post_msg = "No flight offers found."
+                    entity_dict = rasaClient.get_entities(NLP_info_dict)
 
-                    await client.web_client.chat_postMessage(
-                        channel=os.getenv('SLACK_CHANNEL'),
-                        text=post_msg
-                    )
+                    if entity_dict:
+                        response = searchClient.search_offers(**entity_dict)
+                        if response:
+                            post_msg = response
+                        else:
+                            post_msg = "No flight offers found."
+
+                        await client.web_client.chat_postMessage(
+                            channel=os.getenv('SLACK_CHANNEL'),
+                            text=post_msg
+                        )
+                    else:
+                        await client.web_client.chat_postMessage(
+                            channel=os.getenv('SLACK_CHANNEL'),
+                            text=f"Entities missing\n{json.dumps(NLP_info_dict, indent=4)}"
+                        )
             except Exception as e:
                 logging.exception(str(repr(e)))
 

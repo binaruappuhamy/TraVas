@@ -1,34 +1,49 @@
 version: "3.1"
 
 intents:
-  - greet
-  - goodbye
-  - affirm
-  - deny
-  - mood_great
-  - mood_unhappy
-  - bot_challenge
+  - travel
+  - travel_stop
 
-responses:
-  utter_greet:
-  - text: "Hey! How are you?"
+entities:
+   - location:
+       roles:
+       - origin
+       - destination
 
-  utter_cheer_up:
-  - text: "Here is something to cheer you up:"
-    image: "https://i.imgur.com/nGF1K8f.jpg"
+slots:
+  origin:
+    type: any
+    mappings:
+    - type: from_entity
+      entity: location
+      role: origin
+  destination:
+    type: any
+    mappings:
+    - type: from_entity
+      entity: location
+      role: destination
 
-  utter_did_that_help:
-  - text: "Did that help you?"
+# responses:
+#   utter_greet:
+#   - text: "Hey! How are you?"
 
-  utter_happy:
-  - text: "Great, carry on!"
+#   utter_cheer_up:
+#   - text: "Here is something to cheer you up:"
+#     image: "https://i.imgur.com/nGF1K8f.jpg"
 
-  utter_goodbye:
-  - text: "Bye"
+#   utter_did_that_help:
+#   - text: "Did that help you?"
 
-  utter_iamabot:
-  - text: "I am a bot, powered by Rasa."
+#   utter_happy:
+#   - text: "Great, carry on!"
+
+#   utter_goodbye:
+#   - text: "Bye"
+
+#   utter_iamabot:
+#   - text: "I am a bot, powered by Rasa."
 
 session_config:
   session_expiration_time: 60
-  carry_over_slots_to_new_session: true
+  # carry_over_slots_to_new_session: true

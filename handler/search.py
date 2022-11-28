@@ -35,8 +35,8 @@ class Search:
     # returns jsonified string of amadeus's response or None
     def search_offers(self, origin, destination, departure_date):
         try:
-            origin_code_list = self.df_airports.query("city=='{}'".format(origin))
-            destination_code_list = self.df_airports.query("city=='{}'".format(destination))
+            origin_code_list = self.df_airports.query("city=='{}'".format(origin.title()))
+            destination_code_list = self.df_airports.query("city=='{}'".format(destination.title()))
 
             # #Functionality not available in the free version, would be nice to have
             # date_list = self.amadeus.shopping.flight_dates.get(origin=origin_code, destination=destination_code)
@@ -63,7 +63,7 @@ class Search:
                             cheapest_flight_info = response.data[0]          
                             origin_airport = self.df_airports.query(f"iata_code=='{origin_code}'").name.values[0]
                             dest_airport = self.df_airports.query(f"iata_code=='{destination_code}'").name.values[0]
-                            flight_info_report = "Found a flight offer from {} to {} for a price of {price[currency]} {price[grandTotal]} available until {lastTicketingDate} with {numberOfBookableSeats} available seats."
+                            flight_info_report = "Found a {itineraries[0][duration]} flight offer departing at {itineraries[0][segments][0][departure][at]} from {}  to {} for a price of {price[currency]} {price[grandTotal]} available until {lastTicketingDate} with {numberOfBookableSeats} available seats."
                             return flight_info_report.format(origin_airport, dest_airport, **cheapest_flight_info)
 
         except Exception as e:
@@ -80,5 +80,3 @@ def main():
     # #not available in the public version, so we can't book flights from the sdk
     # searchClient.amadeus.booking.flight_orders.post(flight_info, traveler)
     print(flight_info_report)
-
-main()
