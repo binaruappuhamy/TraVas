@@ -11,6 +11,10 @@ from dotenv import load_dotenv
 import json
 
 
+logging.basicConfig(format="%(asctime)s;%(levelname)s;%(message)s")
+logger = logging.getLogger("MAIN_CONTROLLER")
+logger.setLevel(logging.DEBUG)
+
 async def process(client: SocketModeClient, req: SocketModeRequest):
     if req.type == "events_api":
         # Acknowledge the request anyway
@@ -21,8 +25,9 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
         if req.payload["event"]["type"] == "message" and "client_msg_id" in req.payload["event"]:
             try:
                 msg_text = slack.Slack.parseMessageText(req.payload["event"])
+                logger.debug(f"Msg received '{msg_text}'!")
+                
                 rasaClient = rasa.Rasa()
-
                 NLP_info_dict = rasaClient.Classify(msg_text)
                 if rasaClient.IsTravelIntent(NLP_info_dict):
                     post_msg = "Travel Intent Detected!"
@@ -45,12 +50,10 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
                             text=post_msg
                         )
                     else:
-                        await client.web_client.chat_postMessage(
-                            channel=os.getenv('SLACK_CHANNEL'),
-                            text=f"Entities missing\n{json.dumps(NLP_info_dict, indent=4)}"
-                        )
+                        logger.debug("Missing Entities skipping flight search!")
+                        logger.debug(json.dumps(NLP_info_dict, indent=4))
             except Exception as e:
-                logging.exception(str(repr(e)))
+                logger.exception(str(repr(e)))
 
 
 # Use async method

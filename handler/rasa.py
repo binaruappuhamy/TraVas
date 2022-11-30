@@ -48,6 +48,7 @@ class Rasa:
         except Exception as e:
             logger.error(str(repr(e)))
         else:
-            return entity_dict
+            if len(entity_dict) == 3:
+                return entity_dict
 
         return None

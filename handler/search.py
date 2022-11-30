@@ -6,17 +6,20 @@ import os
 from dotenv import load_dotenv
 import logging
 import datetime
-
-logger = logging.getLogger('SEARCH_API')
-logger.setLevel(logging.DEBUG)
+import time
 
 class Search:
     def __init__(self):
+        logging.basicConfig(format="%(asctime)s;%(levelname)s;%(message)s")
+        logger = logging.getLogger("SEARCH_API")
+        logger.setLevel(logging.DEBUG)
+        self.logger = logger
+
         self.amadeus = Client(
             client_id=os.getenv("SEARCH_CLIENT_ID"),
             client_secret=os.getenv("SEARCH_CLIENT_SECRET"),
-            logger=logger,
-            log_level='debug'
+            logger=self.logger,
+            log_level="info"
         )
 
         self.check_date_range = 5
@@ -45,19 +48,29 @@ class Search:
             base = datetime.datetime.strptime(departure_date, "%Y-%m-%d").date()
             date_list = [datetime.datetime.strftime(base + datetime.timedelta(days=x), "%Y-%m-%d") for x in range(self.check_date_range)]
 
-            for origin_row in range(origin_code_list.shape[0]):
-                origin_code = origin_code_list.iat[origin_row, 1]
+            for date in date_list:
+                for origin_row in range(origin_code_list.shape[0]):
+                    origin_code = origin_code_list.iat[origin_row, 1]
 
-                for dest_row in range(destination_code_list.shape[0]):
-                    destination_code = destination_code_list.iat[dest_row, 1]
+                    for dest_row in range(destination_code_list.shape[0]):
+                        destination_code = destination_code_list.iat[dest_row, 1]
 
-                    for date in date_list:
-                        response = self.amadeus.shopping.flight_offers_search.get(
-                            originLocationCode=origin_code,
-                            destinationLocationCode=destination_code,
-                            departureDate=date, 
-                            adults=1
-                        )
+                        self.logger.debug("searching flight offer from {} to {} on {}".format(origin_code, destination_code, date))
+
+                        try:
+                            #10 TPS per user limit for free version...seems like the TPS is even less for me...
+                            response = self.amadeus.shopping.flight_offers_search.get(
+                                originLocationCode=origin_code,
+                                destinationLocationCode=destination_code,
+                                departureDate=date, 
+                                adults=1
+                            )
+                        except Exception as e:
+                            if '429' in e.args[0]:
+                                time.sleep(1)
+                                continue
+                            else:
+                                raise(e)
 
                         if response.data:
                             cheapest_flight_info = response.data[0]          
@@ -67,7 +80,7 @@ class Search:
                             return flight_info_report.format(origin_airport, dest_airport, **cheapest_flight_info)
 
         except Exception as e:
-            logger.error(str(repr(e)))
+            self.logger.error(str(repr(e)))
             return None
         else:
             return None
@@ -75,8 +88,13 @@ class Search:
 def main():
     load_dotenv()
     searchClient = Search()
-    flight_info_report = searchClient.search_offers("Toronto", "Sydney", "2023-10-12")
 
-    # #not available in the public version, so we can't book flights from the sdk
-    # searchClient.amadeus.booking.flight_orders.post(flight_info, traveler)
-    print(flight_info_report)
+    while True:
+        flight_info_report = searchClient.search_offers("Toronto", "Sydney", "2023-10-12")
+
+        # #not available in the public version, so we can't book flights from the sdk
+        # searchClient.amadeus.booking.flight_orders.post(flight_info, traveler)
+        print(flight_info_report)
+
+if __name__ == '__main__':
+    main()
