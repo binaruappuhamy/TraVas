@@ -31,10 +31,7 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
                 NLP_info_dict = rasaClient.Classify(msg_text)
                 if rasaClient.IsTravelIntent(NLP_info_dict):
                     post_msg = "Travel Intent Detected!"
-                    await client.web_client.chat_postMessage(
-                        channel=os.getenv('SLACK_CHANNEL'),
-                        text=post_msg
-                    )
+                    logger.debug(post_msg)
 
                     entity_dict = rasaClient.get_entities(NLP_info_dict)
 
@@ -61,6 +58,8 @@ async def main():
     load_dotenv()
 
     slackClient = slack.Slack()
+    slackClient.clean_channel()
+    await slackClient.post_message("I am listening!")
 
     global searchClient
     searchClient = search.Search()

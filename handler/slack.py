@@ -3,26 +3,35 @@ import os
 from slack_sdk.socket_mode.websocket_client import SocketModeClient
 from slack_sdk.web.async_client import AsyncWebClient
 from slack_sdk.socket_mode.aiohttp import SocketModeClient
-        
+from slack_cleaner2 import *
+import asyncio
+
 
 class Slack:
     def __init__(self):
         self.token = os.getenv('SLACK_TOKEN')
+        self.admin_token = os.getenv('SLACK_ADMIN_TOKEN')
         self.app_token = os.getenv('SLACK_APP_TOKEN')
         self.channelID = os.getenv('SLACK_CHANNEL')
+        self.channelName = "capstone-project"
         self.client = SocketModeClient(
                         app_token=self.app_token, 
                         web_client=AsyncWebClient(token=self.token)
                     )
+        self.cleaner = SlackCleaner(self.admin_token)
+
+    
+    def clean_channel(self):
+        for msg in self.cleaner.c[self.channelName].msgs(with_replies=True):
+            msg.delete()
 
     def Print(self):
         print(self.token)
         print(self.channelID)
 
     #function not needed anymore
-    def GetMessages(self):
-        result = self.client.conversations_history(
-            channel=self.channelID, oldest="1668389600")
+    async def GetMessages(self):
+        result = await self.client.web_client.conversations_history(channel=self.channelID, oldest="0")
 
         return result.data.get("messages", None)
 
@@ -56,9 +65,9 @@ class Slack:
         else:
             return processed_text
 
-    def post_message(self, msg):
+    async def post_message(self, msg):
         try:
-            self.client.web_client.chat_postMessage(
+            await self.client.web_client.chat_postMessage(
                 channel=os.getenv('SLACK_CHANNEL'),
                 text=msg
             )
