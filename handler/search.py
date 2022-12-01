@@ -73,6 +73,11 @@ class Search:
                                 raise(e)
 
                         if response.data:
+                            #Find the airline code and plane
+                            #determine which price (flexible or set)
+                            #mention direct flights or not
+                            #change currency to CAD
+
                             cheapest_flight_info = response.data[0]          
                             origin_airport = self.df_airports.query(f"iata_code=='{origin_code}'").name.values[0]
                             dest_airport = self.df_airports.query(f"iata_code=='{destination_code}'").name.values[0]
