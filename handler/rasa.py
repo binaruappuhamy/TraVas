@@ -1,5 +1,8 @@
 import requests
 import json
+import datetime
+import string
+import re
 import logging
 
 logger = logging.getLogger('RASA_API')
@@ -9,16 +12,42 @@ logger.setLevel(logging.DEBUG)
 class Rasa:
     def __init__(self):
         self.url = 'http://localhost:5005/model/parse'
+        self.NLP_dict = None
 
     # Makes a request to local Rasa instance
     # message: string of text
-    # returns jsonified string of rasa's response
+    # initialises jsonified string of rasa's response in NLP_dict attrib
+    # example below:
+    # {
+    #     "text": "hey",
+    #     "intent": {
+    #         "name": "travel_stop",
+    #         "confidence": 0.9885662198066711
+    #     },
+    #     "entities": [],
+    #     "text_tokens": [
+    #         [
+    #             0,
+    #             3
+    #         ]
+    #     ],
+    #     "intent_ranking": [
+    #         {
+    #             "name": "travel_stop",
+    #             "confidence": 0.9885662198066711
+    #         },
+    #         {
+    #             "name": "travel",
+    #             "confidence": 0.011433818377554417
+    #         }
+    #     ]
+    # }
     def Classify(self, message):
         headers = {'Content-Type': 'application/json'}
         data = json.dumps({'text': message})
         r = requests.post(url=self.url, data=data, headers=headers)
-        return json.loads(r.content.decode('utf8'))
-    
+        self.NLP_dict = json.loads(r.content.decode('utf8'))
+        return None
 
     # data: what rasa returns
     # returns bool, whether the most likely intent is a travel intent
@@ -95,28 +124,64 @@ class Rasa:
         return date_obj
 
     #return dictionary, of travel entities
-    @staticmethod
-    def get_entities(data):
-        entity_dict = dict()
+    def get_entities(self, entity_dict, entity_state):
+        run_search = False
+        dict_cache = entity_dict.copy()
 
         try:
-            entity_list = data["entities"]
+            if self.CheckResetFlag():
+                entity_dict = {
+                    "origin": "Toronto",
+                    "destination": None,
+                    "departure_date": None
+                }
+                entity_state = None
+            else:
+                for entity in self.NLP_dict["entities"]:
+                    # the location grouping is still too inaccurate eg: Tokyo tends to be origin by default
+                    # needs more data and training
+                    # if entity["entity"] == "location" and entity["role"] == "origin":
+                    #     entity_dict["origin"] = entity["value"]
+                    #     entity_state = "origin"
+                    
+                    # if entity["entity"] == "location" and entity["role"] == "destination":
+                    #     entity_dict["destination"] = entity["value"]
+                    #     entity_state = "destination"
 
-            for entity in entity_list:
-                if entity["entity"] == "location" and entity["role"] == "origin":
-                    entity_dict["origin"] = entity["value"]
-                
-                if entity["entity"] == "location" and entity["role"] == "destination":
-                    entity_dict["destination"] = entity["value"]
+                    if entity["entity"] in ["DATE", "date_time"]:
+                        entity_dict["departure_date"] = self.date_resolve(entity["value"])
+                        entity_state = "departure_date"
 
-                if entity["entity"] == "DATE":
-                    entity_dict["departure_date"] = entity["value"]
-        except KeyError as e:
-            pass
+                    loc_val, entity_state = self.loc_resolve(entity, entity_state)
+
+                    if loc_val:
+                        entity_dict[entity_state] = loc_val
+
+                if None not in entity_dict.values() and dict_cache != entity_dict:
+                    run_search = True
+
         except Exception as e:
             logger.error(str(repr(e)))
-        else:
-            if len(entity_dict) == 3:
-                return entity_dict
 
-        return None
+        return entity_dict, entity_state, run_search
+
+
+def main():
+    rasa = Rasa()
+    entity_state = None
+    entity_dict = {
+        "origin": "Toronto",
+        "destination": None,
+        "departure_date": None
+    }
+
+    while True:
+        msg = input(">")
+        rasa.Classify(msg)
+        print(json.dumps(rasa.NLP_dict, indent=4))
+
+        entity_dict, entity_state, run_search = rasa.get_entities(entity_dict, entity_state)
+        print(entity_dict, entity_state, run_search)
+
+if __name__ == '__main__':
+    main()
