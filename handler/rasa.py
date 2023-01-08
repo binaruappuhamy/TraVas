@@ -22,6 +22,42 @@ class Rasa:
 
     # data: what rasa returns
     # returns bool, whether the most likely intent is a travel intent
+    def CheckTravelIntent(self):
+        return self.NLP_dict["intent"]["name"] == "travel"
+
+    # data: what rasa returns
+    # returns bool, whether the reset flag is raised
+    def CheckResetFlag(self):
+        if self.NLP_dict["intent"]["name"] == "travel_stop":
+            for entity in self.NLP_dict["entities"]:
+                if entity["value"].title() == "Travas":
+                    return True
+        return False
+
+    def loc_resolve(self, entity, entity_state):
+        loc_type_dict = {
+            "origin": ["from"],
+            "destination": ["to", "in"]
+        }
+
+        if entity["entity"] == "GPE":
+            pre_entity_pos = max(self.NLP_dict["text_tokens"].index([entity["start"], entity["end"]]) - 1, 0)
+
+            #if no state initialised default to destination
+            if not entity_state:
+                entity_state = "destination"
+
+            if pre_entity_pos:
+                identifier = self.NLP_dict["text"].split()[pre_entity_pos]
+
+                for key, val in loc_type_dict.items():
+                    if identifier in val:
+                        entity_state = key
+
+            return entity["value"].title(), entity_state
+
+        return None, entity_state
+
     @staticmethod
     def date_resolve(date_str):
         date_obj = None
