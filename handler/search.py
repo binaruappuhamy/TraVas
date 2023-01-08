@@ -45,8 +45,7 @@ class Search:
             # date_list = self.amadeus.shopping.flight_dates.get(origin=origin_code, destination=destination_code)
 
             #Check for flights for dates in range departure_date + check_date_range to give the user some option
-            base = datetime.datetime.strptime(departure_date, "%Y-%m-%d").date()
-            date_list = [datetime.datetime.strftime(base + datetime.timedelta(days=x), "%Y-%m-%d") for x in range(self.check_date_range)]
+            date_list = [datetime.datetime.strftime(departure_date + datetime.timedelta(days=x), "%Y-%m-%d") for x in range(self.check_date_range)]
 
             for date in date_list:
                 for origin_row in range(origin_code_list.shape[0]):

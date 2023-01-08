@@ -15,7 +15,17 @@ logging.basicConfig(format="%(asctime)s;%(levelname)s;%(message)s")
 logger = logging.getLogger("MAIN_CONTROLLER")
 logger.setLevel(logging.DEBUG)
 
+entity_state = None
+run_search = False
+entity_dict = {
+    "origin": "Toronto", #default origin to Toronto or current location
+    "destination": None,
+    "departure_date": None #datetime object
+}
+
 async def process(client: SocketModeClient, req: SocketModeRequest):
+    global entity_dict, run_search, entity_state
+    
     if req.type == "events_api":
         # Acknowledge the request anyway
         response = SocketModeResponse(envelope_id=req.envelope_id)
@@ -28,27 +38,20 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
                 logger.debug(f"Msg received '{msg_text}'!")
                 
                 rasaClient = rasa.Rasa()
-                NLP_info_dict = rasaClient.Classify(msg_text)
-                if rasaClient.IsTravelIntent(NLP_info_dict):
-                    post_msg = "Travel Intent Detected!"
-                    logger.debug(post_msg)
+                rasaClient.Classify(msg_text)
+                entity_dict, entity_state, run_search = rasaClient.get_entities(entity_dict, entity_state)
 
-                    entity_dict = rasaClient.get_entities(NLP_info_dict)
-
-                    if entity_dict:
-                        response = searchClient.search_offers(**entity_dict)
-                        if response:
-                            post_msg = response
-                        else:
-                            post_msg = "No flight offers found."
-
-                        await client.web_client.chat_postMessage(
-                            channel=os.getenv('SLACK_CHANNEL'),
-                            text=post_msg
-                        )
+                if run_search:
+                    response = searchClient.search_offers(**entity_dict)
+                    if response:
+                        post_msg = response
                     else:
-                        logger.debug("Missing Entities skipping flight search!")
-                        logger.debug(json.dumps(NLP_info_dict, indent=4))
+                        post_msg = "No flight offers found."
+
+                    await client.web_client.chat_postMessage(
+                        channel=os.getenv('SLACK_CHANNEL'),
+                        text=post_msg
+                    )
             except Exception as e:
                 logger.exception(str(repr(e)))
 
