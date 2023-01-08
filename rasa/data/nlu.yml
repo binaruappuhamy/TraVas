@@ -23,19 +23,22 @@ nlu:
 
 - intent: travel_stop
   examples: |
-    - plan complete
-    - offer selected
-    - new flight search
-    - cu
-    - good by
-    - cee you later
-    - good night
-    - bye
-    - goodbye
-    - have a nice day
-    - see you around
-    - bye bye
-    - see you later
+    - plan complete Travas
+    - offer selected Travas
+    - new flight search Travas
+    - cu Travas
+    - good by Travas
+    - cee you later Travas
+    - good night Travas
+    - bye Travas
+    - goodbye Travas
+    - have a nice day Travas
+    - see you around Travas
+    - bye bye Travas
+    - see you later Travas
+    - thank you Travas
+    - thanks Travas
+    - thnx Travas
 
 # - intent: affirm
 #   examples: |
