@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import logging
 import datetime
 import time
+import re
 
 class Search:
     def __init__(self):
@@ -30,6 +31,24 @@ class Search:
         self.df_airports = self.df_airports[self.df_airports['city'].notna()].reset_index(drop=True)
         self.df_airports = self.df_airports[self.df_airports['iata_code'].notna()].reset_index(drop=True)
         self.df_airports = self.df_airports.sort_values('city')
+
+    # input PTXHYMZH flight duration
+    # returns formated string of XHrs YMins ZSecs
+    # returns jsonified string of amadeus's response or None
+    @staticmethod
+    def format_duration(dur_str):
+        dur_list = re.findall(r"(\d+(?:\.\d)?)([SMH])", dur_str)
+        time_str = ""
+        subst_dict = {
+            "H": "Hrs",
+            "M": "Mins",
+            "S": "Secs"
+        }
+
+        for val, key in dur_list:
+            time_str += f"{val}{subst_dict[key]} "
+            
+        return time_str
 
     # Makes a request to amadeus to get the chapest flights
     # origin: origin city name
@@ -62,7 +81,9 @@ class Search:
                                 originLocationCode=origin_code,
                                 destinationLocationCode=destination_code,
                                 departureDate=date, 
-                                adults=1
+                                adults=1,
+                                currencyCode="CAD",
+                                max=3
                             )
                         except Exception as e:
                             if '429' in e.args[0]:
@@ -72,16 +93,46 @@ class Search:
                                 raise(e)
 
                         if response.data:
-                            #Find the airline code and plane
-                            #determine which price (flexible or set)
-                            #mention direct flights or not
-                            #change currency to CAD
+                            """
+                            Carrier - Flight Price (Flight stops, Available Seats)
+                                From: Origin 
+                                Deprating: Depart Time
+                                To: Depart
+                                Arriving: Arrive Time
+                            """
+                            flight_report = [
+                                f"I believe that you are looking for flights from {origin} to {destination} on {str(departure_date)}!",
+                                f"I suggest these top {len(response.data)} cheapest flights:"
+                            ]
 
-                            cheapest_flight_info = response.data[0]          
-                            origin_airport = self.df_airports.query(f"iata_code=='{origin_code}'").name.values[0]
-                            dest_airport = self.df_airports.query(f"iata_code=='{destination_code}'").name.values[0]
-                            flight_info_report = "Found a {itineraries[0][duration]} flight offer departing at {itineraries[0][segments][0][departure][at]} from {}  to {} for a price of {price[currency]} {price[grandTotal]} available until {lastTicketingDate} with {numberOfBookableSeats} available seats."
-                            return flight_info_report.format(origin_airport, dest_airport, **cheapest_flight_info)
+                            flight_info_msg = [
+                                "{index}. {carrier} - {curr} {price} ({num_stops} Stops, {num_of_seats} Available Seats)",
+                                "\tFrom:\t{origin}",
+                                "\tTo:\t{dest}",
+                                "\tDeprating:\t{dept_when}",
+                                "\tFlight Time:\t{duration}"
+                            ]
+
+                            cheapest_flight_info_list = response.data
+                            cheapest_flight_dict = response.result['dictionaries']
+
+                            for index, info in enumerate(cheapest_flight_info_list):
+                                flight_info = dict()
+                                flight_info["index"] = index+1
+                                flight_info["carrier"] = cheapest_flight_dict["carriers"][info["validatingAirlineCodes"][0]]
+                                flight_info["curr"] = info["price"]["currency"]
+                                flight_info["price"] = info["price"]["grandTotal"]
+                                flight_info["num_stops"] = len(info["itineraries"][0]["segments"])
+                                flight_info["num_of_seats"] = info["numberOfBookableSeats"]
+                                flight_info["origin"] = self.df_airports.query(f"iata_code=='{origin_code}'").name.values[0]
+                                flight_info["dest"] = self.df_airports.query(f"iata_code=='{destination_code}'").name.values[0]
+                                flight_info["dept_when"] = info["itineraries"][0]["segments"][0]["departure"]["at"].replace("T", " at ")
+                                flight_info["duration"] = self.format_duration(info["itineraries"][0]["duration"])
+
+                                flight_info_report = "\n".join(flight_info_msg).format(**flight_info)
+                                flight_report.append(flight_info_report)
+
+                            return "\n\n".join(flight_report)
 
         except Exception as e:
             self.logger.error(str(repr(e)))
@@ -92,13 +143,12 @@ class Search:
 def main():
     load_dotenv()
     searchClient = Search()
+    
+    flight_info_report = searchClient.search_offers("Toronto", "Sydney", datetime.datetime(2023, 5, 15).date())
 
-    while True:
-        flight_info_report = searchClient.search_offers("Toronto", "Sydney", "2023-10-12")
-
-        # #not available in the public version, so we can't book flights from the sdk
-        # searchClient.amadeus.booking.flight_orders.post(flight_info, traveler)
-        print(flight_info_report)
+    # #not available in the public version, so we can't book flights from the sdk
+    # searchClient.amadeus.booking.flight_orders.post(flight_info, traveler)
+    print(flight_info_report)
 
 if __name__ == '__main__':
     main()
