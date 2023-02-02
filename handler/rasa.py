@@ -10,38 +10,42 @@ logger.setLevel(logging.DEBUG)
 
 
 class Rasa:
+
     def __init__(self):
+        '''
+        Makes a request to local Rasa instance
+        message: string of text
+        initialises jsonified string of rasa's response in NLP_dict attrib
+        example below:
+        {
+            "text": "hey",
+            "intent": {
+                "name": "travel_stop",
+                "confidence": 0.9885662198066711
+            },
+            "entities": [],
+            "text_tokens": [
+                [
+                    0,
+                    3
+                ]
+            ],
+            "intent_ranking": [
+                {
+                    "name": "travel_stop",
+                    "confidence": 0.9885662198066711
+                },
+                {
+                    "name": "travel",
+                    "confidence": 0.011433818377554417
+                }
+            ]
+        }
+        '''
         self.url = 'http://localhost:5005/model/parse'
         self.NLP_dict = None
 
-    # Makes a request to local Rasa instance
-    # message: string of text
-    # initialises jsonified string of rasa's response in NLP_dict attrib
-    # example below:
-    # {
-    #     "text": "hey",
-    #     "intent": {
-    #         "name": "travel_stop",
-    #         "confidence": 0.9885662198066711
-    #     },
-    #     "entities": [],
-    #     "text_tokens": [
-    #         [
-    #             0,
-    #             3
-    #         ]
-    #     ],
-    #     "intent_ranking": [
-    #         {
-    #             "name": "travel_stop",
-    #             "confidence": 0.9885662198066711
-    #         },
-    #         {
-    #             "name": "travel",
-    #             "confidence": 0.011433818377554417
-    #         }
-    #     ]
-    # }
+    
     def Classify(self, message):
         headers = {'Content-Type': 'application/json'}
         data = json.dumps({'text': message})

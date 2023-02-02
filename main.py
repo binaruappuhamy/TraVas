@@ -39,10 +39,12 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
                 
                 rasaClient = rasa.Rasa()
                 rasaClient.Classify(msg_text)
+                print(rasaClient.NLP_dict)
                 entity_dict, entity_state, run_search = rasaClient.get_entities(entity_dict, entity_state)
-
+                print("entity dict: ", entity_dict)
+                print("run search: ", run_search)
                 if run_search:
-                    response = searchClient.search_offers(**entity_dict)
+                    response = searchClient.search_flights(**entity_dict)
                     if response:
                         post_msg = response
                     else:
