@@ -97,6 +97,15 @@ class Search:
             else:
                 raise (e)
 
+    def get_cheapest_flight_dates(self, origin_code, dest_code):
+        # not working some how - shouldn't be an API issue because it's under the quotas on Amadeus
+        try:
+            response = self.amadeus.shopping.flight_dates.get(
+                origin='MAD', destination='MUC')
+            print(response.data)
+        except ResponseError as error:
+            raise error
+
     def format_flight_offers(self, response, origin, destination, departure_date, origin_code, destination_code):
         """
         Using the following Format:
@@ -179,16 +188,74 @@ class Search:
             return None
 
 
+    # Hotel Methods
+    def format_hotel_offers(self, hotel_offers_list):
+        if not hotel_offers_list:
+            return "Bro there ain't hotels for this location"
+
+        hotel_message = ["My friend, I feel like these hotels would be nice on your trip, don't you think? \n"]
+
+        hotel_offer_formatter = [
+            "{index}. {hotel_name} - {curr} {price}",
+            "\tCity:\t{city}",
+            "\tGuests:\t{guests}",
+            "\tCheck In Date:\t{check_in_date}",
+            "\tDescription:\t{description}"
+        ]
+
+        for index, info in enumerate(hotel_offers_list):
+            hotel_info = dict()
+            hotel_info["index"] = index+1
+            hotel_info["hotel_name"] = info["hotel"]["name"]
+            hotel_info["city"] = info["hotel"]["cityCode"]
+
+            # Gets the first offer - too lazy to code the other ones
+            first_offer = info["offers"][0]
+
+            hotel_info["curr"] = first_offer["price"]["currency"]
+            hotel_info["price"] = first_offer["price"]["total"]
+            
+            hotel_info["guests"] = first_offer["guests"]["adults"]
+            hotel_info["check_in_date"] = first_offer["checkInDate"]
+            if first_offer["room"]["description"]:
+                # remove escaped characters
+                hotel_info["description"] = first_offer["room"]["description"]["text"].replace("\n", ", ").strip()
+            else:
+                hotel_info["description"] = "No Description"
+
+            hotel_info_report = "\n".join(
+                hotel_offer_formatter).format(**hotel_info)
+            hotel_message.append(hotel_info_report)
+
+        return "\n\n".join(hotel_message)
+
+    def search_hotels(self, location, dates):
+        try:
+            '''
+            Get list of hotel offers by city code
+            '''
+            response = self.amadeus.reference_data.locations.hotels.by_city.get(cityCode=location, ratings='5')
+            hotel_ids = [hotel['hotelId'] for hotel in response.data]
+            hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2')
+            # print(hotel_offers.data)
+
+            return self.format_hotel_offers(hotel_offers.data)
+
+        except ResponseError as error:
+            raise error
+
 def main():
     load_dotenv()
     searchClient = Search()
 
-    flight_info_report = searchClient.search_flights(
-        "Toronto", "Vancouver", datetime.datetime(2023, 5, 15).date())
+    # flight_info_report = searchClient.search_flights("Toronto", "Sydney", datetime.datetime(2023, 2, 20).date())
+    # print(flight_info_report)
 
-    # #not available in the public version, so we can't book flights from the sdk
+    # Booking not available in the public version, so we can't book flights from the sdk
     # searchClient.amadeus.booking.flight_orders.post(flight_info, traveler)
-    print(flight_info_report)
+
+    # Hotel search test
+    print(searchClient.search_hotels("SEA", ""))
 
 
 if __name__ == '__main__':
