@@ -229,14 +229,14 @@ class Search:
 
         return "\n\n".join(hotel_message)
 
-    def search_hotels(self, location, dates):
+    def search_hotels(self, location, date):
         try:
             '''
             Get list of hotel offers by city code
             '''
             response = self.amadeus.reference_data.locations.hotels.by_city.get(cityCode=location, ratings='5')
             hotel_ids = [hotel['hotelId'] for hotel in response.data]
-            hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2')
+            hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2', checkInDate=date)
             # print(hotel_offers.data)
 
             return self.format_hotel_offers(hotel_offers.data)
@@ -255,7 +255,7 @@ def main():
     # searchClient.amadeus.booking.flight_orders.post(flight_info, traveler)
 
     # Hotel search test
-    print(searchClient.search_hotels("SEA", ""))
+    print(searchClient.search_hotels("NYC", "2023-05-01"))
 
 
 if __name__ == '__main__':
