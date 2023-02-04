@@ -44,8 +44,7 @@ class Rasa:
         '''
         self.url = 'http://localhost:5005/model/parse'
         self.NLP_dict = None
-
-    
+        
     def Classify(self, message):
         headers = {'Content-Type': 'application/json'}
         data = json.dumps({'text': message})
@@ -57,6 +56,9 @@ class Rasa:
     # returns bool, whether the most likely intent is a travel intent
     def CheckTravelIntent(self):
         return self.NLP_dict["intent"]["name"] == "travel"
+    
+    def CheckHotelIntent(self):
+        return self.NLP_dict["intent"]["name"] == "hotel"
 
     # data: what rasa returns
     # returns bool, whether the reset flag is raised

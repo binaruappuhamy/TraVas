@@ -26,6 +26,7 @@ class Search:
 
         self.date_range = 5
         self.load_airports()
+        self.load_cities()
 
     def load_airports(self):
         '''Load airport data from csv'''
@@ -35,6 +36,15 @@ class Search:
         self.df_airports = self.df_airports[self.df_airports['city'].notna()].reset_index(drop=True)
         self.df_airports = self.df_airports[self.df_airports['iata_code'].notna()].reset_index(drop=True)
         self.df_airports = self.df_airports.sort_values('city')
+
+    def load_cities(self):
+        self.city_codes = {
+            "Sydney": "SYD",
+            "Tokyo": "TYO",
+            "Vancouver": "VAN",
+            "Paris": "PAR",
+            "London": "LON",
+        }
 
     @staticmethod
     def format_duration(dur_str):
@@ -63,6 +73,9 @@ class Search:
         @return: a list of airports in the city
         '''
         return self.df_airports.query("city=='{}'".format(city.title()))
+
+    def get_city_code(self, city):
+        return self.city_codes.get(city)
 
     def get_airport_combinations(self, origin, destination):
         '''Get all combinations of airports of (origin, destination)'''
@@ -191,7 +204,7 @@ class Search:
     # Hotel Methods
     def format_hotel_offers(self, hotel_offers_list):
         if not hotel_offers_list:
-            return "Bro there ain't hotels for this location"
+            return None
 
         hotel_message = ["My friend, I feel like these hotels would be nice on your trip, don't you think? \n"]
 
@@ -234,9 +247,16 @@ class Search:
             '''
             Get list of hotel offers by city code
             '''
-            response = self.amadeus.reference_data.locations.hotels.by_city.get(cityCode=location, ratings='5')
+
+            # Only a few cities are in the test data base... can't find IATA city codes at all
+            city_code = self.get_city_code(location)
+            if not city_code:
+                return None
+            
+            response = self.amadeus.reference_data.locations.hotels.by_city.get(
+                cityCode=city_code, ratings='5')
             hotel_ids = [hotel['hotelId'] for hotel in response.data]
-            hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2', checkInDate=date)
+            hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2', radius='100', checkInDate=date)
             # print(hotel_offers.data)
 
             return self.format_hotel_offers(hotel_offers.data)
@@ -255,7 +275,7 @@ def main():
     # searchClient.amadeus.booking.flight_orders.post(flight_info, traveler)
 
     # Hotel search test
-    print(searchClient.search_hotels("NYC", "2023-05-01"))
+    print(searchClient.search_hotels("NRT", "2023-05-01"))
 
 
 if __name__ == '__main__':
