@@ -20,7 +20,12 @@ run_search = False
 entity_dict = {
     "origin": "Toronto", #default origin to Toronto or current location
     "destination": None,
-    "departure_date": None #datetime object
+    "departure_date": None, #datetime object
+}
+
+hotel_dict = {
+    "travel_intent": False,
+    "destination_codes": None
 }
 
 async def process(client: SocketModeClient, req: SocketModeRequest):
@@ -38,16 +43,37 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
                 logger.debug(f"Msg received '{msg_text}'!")
                 
                 rasaClient = rasa.Rasa()
-                rasaClient.Classify(msg_text)
-                entity_dict, entity_state, run_search = rasaClient.get_entities(entity_dict, entity_state)
+                if hotel_dict["travel_intent"] and rasaClient.CheckHotelIntent:
+                    hotel_dict["travel_intent"] == False 
+                    destination = entity_dict["destination"]
+                    departure_date = entity_dict["departure_date"]
+                    logger.debug(f"Booking hotels for '{destination}' on {departure_date}")
+                    response = searchClient.search_hotels(entity_dict["destination"], departure_date)
+                    if response:
+                        post_msg = response
+                    else:
+                        post_msg = "No hotel offers found."
+                        
+                    await client.web_client.chat_postMessage(
+                        channel=os.getenv('SLACK_CHANNEL'),
+                        text=post_msg
+                    )   
 
+
+                rasaClient.Classify(msg_text)
+                print(rasaClient.NLP_dict)
+                entity_dict, entity_state, run_search = rasaClient.get_entities(entity_dict, entity_state)
+                print("entity dict: ", entity_dict)
+                print("run search: ", run_search)
                 if run_search:
-                    response = searchClient.search_offers(**entity_dict)
+                    response = searchClient.search_flights(**entity_dict)
+                    # Save some info for hotels
+                    hotel_dict["travel_intent"] = True
+
                     if response:
                         post_msg = response
                     else:
                         post_msg = "No flight offers found."
-
                     await client.web_client.chat_postMessage(
                         channel=os.getenv('SLACK_CHANNEL'),
                         text=post_msg
