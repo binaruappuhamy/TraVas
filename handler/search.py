@@ -23,8 +23,12 @@ class Search:
             log_level="info"
         )
 
-        self.check_date_range = 5
+        self.date_range = 5
+        self.load_airports()
+        self.load_cities()
 
+    def load_airports(self):
+        '''Load airport data from csv'''
         self.df_airports = pd.read_csv('https://ourairports.com/data/airports.csv')
         self.df_airports = self.df_airports[['municipality', 'iata_code', 'name']].copy()
         self.df_airports.rename({'municipality': 'city'}, axis=1, inplace=True)
@@ -32,57 +36,162 @@ class Search:
         self.df_airports = self.df_airports[self.df_airports['iata_code'].notna()].reset_index(drop=True)
         self.df_airports = self.df_airports.sort_values('city')
 
-    # Makes a request to amadeus to get the chapest flights
-    # origin: origin city name
-    # destination: destination city name
-    # departure date: the day you need to book the flight (YYYY-MM-DD)
-    # returns jsonified string of amadeus's response or None
-    def search_offers(self, origin, destination, departure_date):
+    def load_cities(self):
+        self.city_codes = {
+            "Sydney": "SYD",
+            "Tokyo": "TYO",
+            "Vancouver": "VAN",
+            "Paris": "PAR",
+            "London": "LON",
+        }
+
+    @staticmethod
+    def format_duration(dur_str):
+        '''
+        input PTXHYMZH flight duration
+        returns formated string of XHrs YMins ZSecs
+        returns jsonified string of amadeus's response or None
+        '''
+        dur_list = re.findall(r"(\d+(?:\.\d)?)([SMH])", dur_str)
+        time_str = ""
+        subst_dict = {
+            "H": "Hrs",
+            "M": "Mins",
+            "S": "Secs"
+        }
+
+        for val, key in dur_list:
+            time_str += f"{val}{subst_dict[key]} "
+
+        return time_str
+
+    def get_city_airports(self, city):
+        '''
+        Each city may have multiple airports
+        @param city: city to find the airports of
+        @return: a list of airports in the city
+        '''
+        return self.df_airports.query("city=='{}'".format(city.title()))
+
+    def get_city_code(self, city):
+        return self.city_codes.get(city)
+
+    def get_airport_combinations(self, origin, destination):
+        '''Get all combinations of airports of (origin, destination)'''
+        origin_code_list = self.get_city_airports(origin)["iata_code"].tolist()
+        dest_code_list = self.get_city_airports(destination)["iata_code"].tolist()
+
+        return [(x, y) for x in origin_code_list for y in dest_code_list]
+
+    @staticmethod
+    def get_date_list(date, date_range):
+        '''Create a list of dates in a range (departure_date + check_date_range) to give the user some option'''
+        # Functionality not available in the free version, would be nice to have
+        # date_list = self.amadeus.shopping.flight_dates.get(origin=origin_code, destination=destination_code)
+        date_list = [datetime.datetime.strftime(date + datetime.timedelta(days=x), "%Y-%m-%d") for x in range(date_range)]
+        return date_list
+
+    def request_amadeus_flight_offers(self, origin_code, destination_code, date):
         try:
-            origin_code_list = self.df_airports.query("city=='{}'".format(origin.title()))
-            destination_code_list = self.df_airports.query("city=='{}'".format(destination.title()))
+            # 10 TPS per user limit for free version...seems like the TPS is even less for me...
+            response = self.amadeus.shopping.flight_offers_search.get(
+                originLocationCode=origin_code,
+                destinationLocationCode=destination_code,
+                departureDate=date,
+                adults=1,
+                currencyCode="CAD",
+                max=3
+            )
+            return response
+        except Exception as e:
+            if '429' in e.args[0]:
+                time.sleep(1)
+            else:
+                raise (e)
 
-            # #Functionality not available in the free version, would be nice to have
-            # date_list = self.amadeus.shopping.flight_dates.get(origin=origin_code, destination=destination_code)
+    def get_cheapest_flight_dates(self, origin_code, dest_code):
+        # not working some how - shouldn't be an API issue because it's under the quotas on Amadeus
+        try:
+            response = self.amadeus.shopping.flight_dates.get(
+                origin='MAD', destination='MUC')
+            print(response.data)
+        except ResponseError as error:
+            raise error
 
-            #Check for flights for dates in range departure_date + check_date_range to give the user some option
-            date_list = [datetime.datetime.strftime(departure_date + datetime.timedelta(days=x), "%Y-%m-%d") for x in range(self.check_date_range)]
+    def format_flight_offers(self, response, origin, destination, departure_date, origin_code, destination_code):
+        """
+        Using the following Format:
+        ----------------------------------
+        Carrier - Flight Price (Flight stops, Available Seats)
+            From: Origin
+            Deprating: Depart Time
+            To: Depart
+            Arriving: Arrive Time
+        """
+
+        flight_report = [
+            f"I believe that you are looking for flights from {origin} to {destination} on {str(departure_date)}!",
+            f"I suggest these top {len(response.data)} cheapest flights:"
+        ]
+
+        flight_info_msg = [
+            "{index}. {carrier} - {curr} {price} ({num_stops} Stops, {num_of_seats} Available Seats)",
+            "\tFrom:\t{origin}",
+            "\tTo:\t{dest}",
+            "\tDeprating:\t{dept_when}",
+            "\tFlight Time:\t{duration}"
+        ]
+
+        cheapest_flight_info_list = response.data
+        cheapest_flight_dict = response.result['dictionaries']
+
+        for index, info in enumerate(cheapest_flight_info_list):
+            flight_info = dict()
+            flight_info["index"] = index+1
+            flight_info["carrier"] = cheapest_flight_dict["carriers"][info["validatingAirlineCodes"][0]]
+            flight_info["curr"] = info["price"]["currency"]
+            flight_info["price"] = info["price"]["grandTotal"]
+            flight_info["num_stops"] = len(
+                info["itineraries"][0]["segments"])
+            flight_info["num_of_seats"] = info["numberOfBookableSeats"]
+            flight_info["origin"] = self.df_airports.query(
+                f"iata_code=='{origin_code}'").name.values[0]
+            flight_info["dest"] = self.df_airports.query(
+                f"iata_code=='{destination_code}'").name.values[0]
+            flight_info["dept_when"] = info["itineraries"][0]["segments"][0]["departure"]["at"].replace(
+                "T", " at ")
+            flight_info["duration"] = self.format_duration(
+                info["itineraries"][0]["duration"])
+
+            flight_info_report = "\n".join(
+                flight_info_msg).format(**flight_info)
+            flight_report.append(flight_info_report)
+
+        return "\n\n".join(flight_report)
+
+    def search_flights(self, origin, destination, departure_date):
+        '''
+        Makes a request to amadeus to get the chapest flights
+            origin: origin city name
+            destination: destination city name
+            departure date: the day you need to book the flight (YYYY-MM-DD)
+            returns jsonified string of amadeus's response or None
+        '''
+        try:
+            # Get the airport combinations in the departure & arrival cities (there can be multiple in each city)
+            airport_pairs = self.get_airport_combinations(origin, destination)
+            # Get a range of departure dates
+            date_list = self.get_date_list(departure_date, self.date_range)
 
             for date in date_list:
-                for origin_row in range(origin_code_list.shape[0]):
-                    origin_code = origin_code_list.iat[origin_row, 1]
-
-                    for dest_row in range(destination_code_list.shape[0]):
-                        destination_code = destination_code_list.iat[dest_row, 1]
-
-                        self.logger.debug("searching flight offer from {} to {} on {}".format(origin_code, destination_code, date))
-
-                        try:
-                            #10 TPS per user limit for free version...seems like the TPS is even less for me...
-                            response = self.amadeus.shopping.flight_offers_search.get(
-                                originLocationCode=origin_code,
-                                destinationLocationCode=destination_code,
-                                departureDate=date, 
-                                adults=1
-                            )
-                        except Exception as e:
-                            if '429' in e.args[0]:
-                                time.sleep(1)
-                                continue
-                            else:
-                                raise(e)
-
-                        if response.data:
-                            #Find the airline code and plane
-                            #determine which price (flexible or set)
-                            #mention direct flights or not
-                            #change currency to CAD
-
-                            cheapest_flight_info = response.data[0]          
-                            origin_airport = self.df_airports.query(f"iata_code=='{origin_code}'").name.values[0]
-                            dest_airport = self.df_airports.query(f"iata_code=='{destination_code}'").name.values[0]
-                            flight_info_report = "Found a {itineraries[0][duration]} flight offer departing at {itineraries[0][segments][0][departure][at]} from {}  to {} for a price of {price[currency]} {price[grandTotal]} available until {lastTicketingDate} with {numberOfBookableSeats} available seats."
-                            return flight_info_report.format(origin_airport, dest_airport, **cheapest_flight_info)
+                for (origin_code, destination_code) in airport_pairs:
+                    self.logger.debug("searching flight offer from {} to {} on {}".format(origin_code, destination_code, date))
+                    
+                    # Request flight offers from Amadeus
+                    response = self.request_amadeus_flight_offers(origin_code, destination_code, date)
+                    if response.data:
+                        formatted_message = self.format_flight_offers(response, origin, destination, departure_date, origin_code, destination_code)
+                        return formatted_message
 
         except Exception as e:
             self.logger.error(str(repr(e)))
@@ -90,86 +199,83 @@ class Search:
         else:
             return None
 
-    def search_location_id(destination):
-        try:
-            url = "https://worldwide-restaurants.p.rapidapi.com/typeahead"
 
-            payload = "q=" + destination + "&language=en_US"
-            print(payload)
-            headers = {
-	            "content-type": "application/x-www-form-urlencoded",
-	            "X-RapidAPI-Key": "08691c664dmsh172b54fbfcfb87cp1b3742jsn67b6f9936827",
-	            "X-RapidAPI-Host": "worldwide-restaurants.p.rapidapi.com"
-            }
-
-            response = requests.request("POST", url, data=payload, headers=headers)
-
-            body = json.loads(response.text)
-
-            print(body)
-            print(type(body))
-
-            location_id = body['results']['data'][0]['result_object'][0]['location_id']
-            print(location_id)
-            return location_id
-
-        except Exception as e:
-            print('Error:', e)
+    # Hotel Methods
+    def format_hotel_offers(self, hotel_offers_list):
+        if not hotel_offers_list:
             return None
 
-    def search_restaurants(location_id):
-        name = list()
-        num_reviews = list()
-        rating = list()
-        ranking = list()
-        price_level = list()
-        restaurants = dict()
+        hotel_message = ["My friend, I feel like these hotels would be nice on your trip, don't you think? \n"]
 
+        hotel_offer_formatter = [
+            "{index}. {hotel_name} - {curr} {price}",
+            "\tCity:\t{city}",
+            "\tGuests:\t{guests}",
+            "\tCheck In Date:\t{check_in_date}",
+            "\tDescription:\t{description}"
+        ]
+
+        for index, info in enumerate(hotel_offers_list):
+            hotel_info = dict()
+            hotel_info["index"] = index+1
+            hotel_info["hotel_name"] = info["hotel"]["name"]
+            hotel_info["city"] = info["hotel"]["cityCode"]
+
+            # Gets the first offer - too lazy to code the other ones
+            first_offer = info["offers"][0]
+
+            hotel_info["curr"] = first_offer["price"]["currency"]
+            hotel_info["price"] = first_offer["price"]["total"]
+            
+            hotel_info["guests"] = first_offer["guests"]["adults"]
+            hotel_info["check_in_date"] = first_offer["checkInDate"]
+            if first_offer["room"]["description"]:
+                # remove escaped characters
+                hotel_info["description"] = first_offer["room"]["description"]["text"].replace("\n", ", ").strip()
+            else:
+                hotel_info["description"] = "No Description"
+
+            hotel_info_report = "\n".join(
+                hotel_offer_formatter).format(**hotel_info)
+            hotel_message.append(hotel_info_report)
+
+        return "\n\n".join(hotel_message)
+
+    def search_hotels(self, location, date):
         try:
-            url = "https://worldwide-restaurants.p.rapidapi.com/search"
+            '''
+            Get list of hotel offers by city code
+            '''
 
-            payload = "language=en_US&limit=5&location_id=187791&currency=CAD"
-            payload = "language=en_US&limit=5&location_id=" + location_id + "&currency=CAD"
-
-            headers = {
-                "content-type": "application/x-www-form-urlencoded",
-                "X-RapidAPI-Key": "08691c664dmsh172b54fbfcfb87cp1b3742jsn67b6f9936827",
-                "X-RapidAPI-Host": "worldwide-restaurants.p.rapidapi.com"
-            }
-
-            response = requests.request("POST", url, data=payload, headers=headers)   
-
-            body = json.loads(response.text)     
+            # Only a few cities are in the test data base... can't find IATA city codes at all
+            city_code = self.get_city_code(location)
+            if not city_code:
+                return None
             
-            for i in range(5):
-                name.append(body['results']['data'][i]['name'])
-                num_reviews.append(body['results']['data'][i]['num_reviews'])
-                rating.append(body['results']['data'][i]['rating'])
-                ranking.append(body['results']['data'][i]['ranking'])
-                price_level.append(body['results']['data'][i]['price_level'])
+            response = self.amadeus.reference_data.locations.hotels.by_city.get(
+                cityCode=city_code, ratings='5')
+            hotel_ids = [hotel['hotelId'] for hotel in response.data]
+            hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2', radius='100', checkInDate=date)
+            # print(hotel_offers.data)
 
-            restaurants["name"] = name
-            restaurants["num_reviews"] = num_reviews
-            restaurants["rating"] = rating
-            restaurants["ranking"] = ranking
-            restaurants["price_level"] = price_level
+            return self.format_hotel_offers(hotel_offers.data)
 
-            return restaurants
-            
-        except Exception as e:
-            #self.logger.error(str(repr(e)))
-            return None
-        
+        except ResponseError as error:
+            raise error
+
 def main():
     load_dotenv()
     searchClient = Search()
 
-    while True:
-        flight_info_report = searchClient.search_offers("Toronto", "Sydney", "2023-10-12")
+    # flight_info_report = searchClient.search_flights("Toronto", "Sydney", datetime.datetime(2023, 2, 20).date())
+    # print(flight_info_report)
 
-        # #not available in the public version, so we can't book flights from the sdk
-        # searchClient.amadeus.booking.flight_orders.post(flight_info, traveler)
-        print(flight_info_report)
+    # Booking not available in the public version, so we can't book flights from the sdk
+    # searchClient.amadeus.booking.flight_orders.post(flight_info, traveler)
+
+    # Hotel search test
+    print(searchClient.search_hotels("NRT", "2023-05-01"))
+
 
 if __name__ == '__main__':
     main()
