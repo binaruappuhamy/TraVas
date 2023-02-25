@@ -38,13 +38,8 @@ class Search:
         self.df_airports = self.df_airports.sort_values('city')
 
     def load_cities(self):
-        self.city_codes = {
-            "Sydney": "SYD",
-            "Tokyo": "TYO",
-            "Vancouver": "VAN",
-            "Paris": "PAR",
-            "London": "LON",
-        }
+        csv_path = os.path.join(os.path.dirname(__file__), '../data/city_codes.csv')
+        self.city_codes = pd.read_csv(csv_path)
 
     @staticmethod
     def format_duration(dur_str):
@@ -75,7 +70,8 @@ class Search:
         return self.df_airports.query("city=='{}'".format(city.title()))
 
     def get_city_code(self, city):
-        return self.city_codes.get(city)
+        city_code = self.city_codes.loc[self.city_codes['Location'] == city, 'CityCode'].iloc[0]
+        return city_code
 
     def get_airport_combinations(self, origin, destination):
         '''Get all combinations of airports of (origin, destination)'''
@@ -267,6 +263,8 @@ class Search:
 def main():
     load_dotenv()
     searchClient = Search()
+    print(searchClient.get_city_code("Tokyo"))
+    # print(searchClient.get_city_airports("Sydney"))
 
     # flight_info_report = searchClient.search_flights("Toronto", "Sydney", datetime.datetime(2023, 2, 20).date())
     # print(flight_info_report)
@@ -275,7 +273,7 @@ def main():
     # searchClient.amadeus.booking.flight_orders.post(flight_info, traveler)
 
     # Hotel search test
-    print(searchClient.search_hotels("NRT", "2023-05-01"))
+    # print(searchClient.search_hotels("Paris", "2023-02-20"))
 
 
 if __name__ == '__main__':
