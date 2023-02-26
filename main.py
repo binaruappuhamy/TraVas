@@ -17,8 +17,19 @@ logger = logging.getLogger("MAIN_CONTROLLER")
 logger.setLevel(logging.DEBUG)
 
 
+async def send_hotel_offers():
+    response = SearchClient.search_hotels(StateContext)
+    post_msg = response if response else "No hotel offers found."
+    await SlackClient.post_message(post_msg)
+
+
+async def send_flight_offers():
+    response = SearchClient.search_flights(StateContext)
+    post_msg = response if response else "No flight offers found."
+    await SlackClient.post_message(post_msg)
+
+
 async def process(client: SocketModeClient, req: SocketModeRequest):
-    global entity_dict, run_search, entity_state
     
     if req.type == "events_api":
         # Acknowledge the request anyway
@@ -33,13 +44,24 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
                 logger.debug(f"Msg received '{msg_text}'!")
 
                 # Get intent and entities
-                RasaClient.get_entities
+                entity_dict, intent_dict = RasaClient.classify(msg_text)
 
+                # Update state with new intent and entities
+                StateContext.update(entity_dict, intent_dict)
+                StateContext.printState()
+
+                # Send flight and hotel offers if appropriate
+                if StateContext.should_send_flight_offers():
+                    logger.debug("Sending flight offers")
+                    await send_flight_offers()
+                    
+                if StateContext.should_send_hotel_offers():
+                    logger.debug("Sending hotel offers")
+                    await send_hotel_offers()
 
             except Exception as e:
-                pass
-
-
+                logger.debug(e)
+                print(e)
 
 
 # Use async method

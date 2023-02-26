@@ -1,7 +1,7 @@
 version: "3.1"
 
 nlu:
-- intent: travel
+- intent: flight
   examples: |
     - travel
     - fly
@@ -163,9 +163,39 @@ nlu:
     - Find budget-friendly hotels in the city
     - Look for a hotel with top-notch amenities
     - Book a hotel for an upcoming business trip
+    - Perhaps we could consider booking a hotel as well?
+    - It might be a good idea to search for hotels too.
+    - Do you think we should also check for hotel availability?
+    - I'm thinking we could also explore hotel options.
+    - It could be worth looking for hotels in the area too.
+    - Have you considered searching for hotels as well?
+    - In addition to flights, should we also search for hotels?
+    - Let's not forget to search for hotels as well.
+    - It might be a good idea to book a hotel along with the flight.
+    - Would you like to look for hotels in the destination city as well?
+    - I'm wondering if we should also book a hotel.
+    - Are you interested in searching for hotels as well?
+    - Let's not just focus on flights, we should also look for hotels.
+    - Maybe it's worth exploring some hotel options too?
+    - Shall we also look for available hotels in the area?
+    - I think we should also consider booking a hotel.
+    - What do you think about looking for hotels in addition to flights?
+    - Do you want to search for hotels along with the flight?
+    - Perhaps we should broaden our search to include hotels as well?
+    - I'm considering searching for hotels as well, what do you think?
+    - We shouldn't forget to check for hotel availability too.
+    - Maybe we could also search for some good hotel deals?
+    - Let's not overlook the possibility of booking a hotel.
+    - It could be a good idea to look for hotels in the same area as the flight.
+    - What do you say we search for some good hotel options too?
+    - I'm open to exploring hotels as well, what do you think?
+    - Do you think we should also check for hotel rates in the area?
+    - Perhaps it's a good idea to book a hotel ahead of time too?
+    - Maybe we should search for some hotels that offer discounts on flights too.
+    - In addition to flights, should we also look for available hotels?
 
 
-- intent: travel_stop
+- intent: stop
   examples: |
     - plan complete Travas
     - offer selected Travas

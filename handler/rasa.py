@@ -24,6 +24,7 @@ class Rasa:
         data = json.loads(r.content.decode('utf8'))
         self.data = data
 
+        # parse entities and intents from response
         return self.process_rasa_response(data)
     
     def process_rasa_response(self, data):
@@ -60,8 +61,7 @@ class Rasa:
 def main():
     # Use the following to see what the Rasa response looks like
     rasa = Rasa()
-    print(rasa.classify(
-        "I want to fly from Toronto to Tokyo on 05/25/2023"))
+    print(rasa.classify("I want to fly from Toronto to Tokyo on 05/25/2023"))
 
     # print(rasa.data)
 

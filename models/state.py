@@ -1,6 +1,8 @@
 
+import logging
 
-
+logger = logging.getLogger('RASA_API')
+logger.setLevel(logging.DEBUG)
 
 class State:
     def __init__(self):
@@ -19,6 +21,14 @@ class State:
             "hotel": False,
             "stop": False,
         }
+    
+    def printState(self):
+        print("Entity:")
+        for key, value in self.entity_dict.items():
+            print(f"{key}: {value}")
+        print("\nIntent:")
+        for key, value in self.intent_dict.items():
+            print(f"{key}: {value}")
 
     def update(self, new_entity_dict, new_intent_dict):
         # Reset if convo ended
@@ -30,7 +40,7 @@ class State:
         for key in new_entity_dict:
             if new_entity_dict[key] is not None:
                 self.entity_dict[key] = new_entity_dict[key]
-                
+
         for key in new_intent_dict:
             if new_intent_dict[key] is not None:
                 self.intent_dict[key] = new_intent_dict[key]

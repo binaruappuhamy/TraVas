@@ -8,6 +8,7 @@ import logging
 import datetime
 import time
 import re
+import models.state as State
 
 
 class Search:
@@ -166,7 +167,7 @@ class Search:
 
         return "\n\n".join(flight_report)
 
-    def search_flights(self, origin, destination, departure_date):
+    def search_flights(self, state:State):
         '''
         Makes a request to amadeus to get the chapest flights
             origin: origin city name
@@ -174,6 +175,10 @@ class Search:
             departure date: the day you need to book the flight (YYYY-MM-DD)
             returns jsonified string of amadeus's response or None
         '''
+        origin = state.get_entity("origin")
+        destination = state.get_entity("destination")
+        departure_date = state.get_entity("departure_date")
+
         try:
             # Get the airport combinations in the departure & arrival cities (there can be multiple in each city)
             airport_pairs = self.get_airport_combinations(origin, destination)
@@ -238,22 +243,21 @@ class Search:
 
         return "\n\n".join(hotel_message)
 
-    def search_hotels(self, location, date):
+    def search_hotels(self, state: State):
         try:
             '''
             Get list of hotel offers by city code
             '''
+            city = state.get_entity("destination")
+            city_code = self.get_city_code(city)
+            date = state.get_entity("departure_date")
 
-            # Only a few cities are in the test data base... can't find IATA city codes at all
-            city_code = self.get_city_code(location)
             if not city_code:
                 return None
             
-            response = self.amadeus.reference_data.locations.hotels.by_city.get(
-                cityCode=city_code, ratings='5')
+            response = self.amadeus.reference_data.locations.hotels.by_city.get(cityCode=city_code, ratings='5')
             hotel_ids = [hotel['hotelId'] for hotel in response.data]
             hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2', radius='100', checkInDate=date)
-            # print(hotel_offers.data)
 
             return self.format_hotel_offers(hotel_offers.data)
 
