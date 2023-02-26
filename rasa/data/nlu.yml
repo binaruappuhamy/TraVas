@@ -16,9 +16,137 @@ nlu:
     - Lets fly from [Toronto]{"entity": "location", "role": "origin"} to [Sydney]{"entity": "location", "role": "destination"}
     - I want to plan the flight on [May 01 2023]{"entity": "date_time"}
     - book a flight on [10/05/2023]{"entity": "date_time"}
+    - I want to travel from [Toronto]{"entity": "location", "role": "origin"} to [Tokyo]{"entity": "location", "role": "destination"} on [05/25/2023]{"entity": "date_time"}
+    - I'm planning a trip from [New York City]{"entity": "location", "role": "origin"} to [Paris]{"entity": "location", "role": "destination"} on [07/15/2023]{"entity": "date_time"}
+    - I want to fly from [Los Angeles]{"entity": "location", "role": "origin"} to [Sydney]{"entity": "location", "role": "destination"} on [10/10/2023]{"entity": "date_time"}
+    - I'm dreaming of going from [Dubai]{"entity": "location", "role": "origin"} to [Barcelona]{"entity": "location", "role": "destination"} on [12/31/2023]{"entity": "date_time"}
+    - I'm looking to travel from [London]{"entity": "location", "role": "origin"} to [Rio de Janeiro]{"entity": "location", "role": "destination"} on [03/01/2024]{"entity": "date_time"}
+    - I want to take a trip from [Munich]{"entity": "location", "role": "origin"} to [Cape Town]{"entity": "location", "role": "destination"} on [06/05/2024]{"entity": "date_time"}
+    - I'm planning a journey from [Amsterdam]{"entity": "location", "role": "origin"} to [New York City]{"entity": "location", "role": "destination"} on [09/12/2024]{"entity": "date_time"}
+    - I want to fly from [Sydney]{"entity": "location", "role": "origin"} to [Cape Town]{"entity": "location", "role": "destination"} on [01/05/2025]{"entity": "date_time"}
+    - I'm dreaming of going from [Tokyo]{"entity": "location", "role": "origin"} to [Barcelona]{"entity": "location", "role": "destination"} on [04/22/2025]{"entity": "date_time"}
+    - I'm looking to travel from [Rio de Janeiro]{"entity": "location", "role": "origin"} to [Amsterdam]{"entity": "location", "role": "destination"} on [08/08/2025]{"entity": "date_time"}
+    - I want to take a trip from [Dubai]{"entity": "location", "role": "origin"} to [Paris]{"entity": "location", "role": "destination"} on [11/17/2025]{"entity": "date_time"}
+    - I'm planning to travel from [Bangkok]{"entity": "location", "role": "origin"} to [Shanghai]{"entity": "location", "role": "destination"} on [05/25/2023]{"entity": "date_time"}
+    - I want to fly from [Hong Kong]{"entity": "location", "role": "origin"} to [Tokyo]{"entity": "location", "role": "destination"} on [07/15/2023]{"entity": "date_time"}
+    - I'm dreaming of going from [Seoul]{"entity": "location", "role": "origin"} to [Taipei]{"entity": "location", "role": "destination"} on [10/10/2023]{"entity": "date_time"}
+    - I want to take a trip from [Mumbai]{"entity": "location", "role": "origin"} to [Bangalore]{"entity": "location", "role": "destination"} on [12/31/2023]{"entity": "date_time"}
+    - I'm planning a journey from [Beijing]{"entity": "location", "role": "origin"} to [New Delhi]{"entity": "location", "role": "destination"} on [03/01/2024]{"entity": "date_time"}
+    - I want to fly from [Jakarta]{"entity": "location", "role": "origin"} to [Bangkok]{"entity": "location", "role": "destination"} on [06/05/2024]{"entity": "date_time"}
+    - I'm dreaming of going from [Kuala Lumpur]{"entity": "location", "role": "origin"} to [Tokyo]{"entity": "location", "role": "destination"} on [09/12/2024]{"entity": "date_time"}
+    - I'm looking to travel from [Shanghai]{"entity": "location", "role": "origin"} to [Seoul]{"entity": "location", "role": "destination"} on [01/05/2025]{"entity": "date_time"}
+    - I want to take a trip from [Singapore]{"entity": "location", "role": "origin"} to [Hong Kong]{"entity": "location", "role": "destination"} on [04/22/2025]{"entity": "date_time"}
+    - I'm planning a journey from [Tokyo]{"entity": "location", "role": "origin"} to [Mumbai]{"entity": "location", "role": "destination"} on [08/08/2025]{"entity": "date_time"}
+    - I'm thinking of traveling from [Bangkok]{"entity": "location", "role": "origin"} to [Hanoi]{"entity": "location", "role": "destination"} on [05/25/2023]{"entity": "date_time"}
+    - I want to take a trip from [Manila]{"entity": "location", "role": "origin"} to [Seoul]{"entity": "location", "role": "destination"} on [07/15/2023]{"entity": "date_time"}
+    - I'm planning to fly from [Jakarta]{"entity": "location", "role": "origin"} to [Sydney]{"entity": "location", "role": "destination"} on [10/10/2023]{"entity": "date_time"}
+    - I'm dreaming of going from [Hong Kong]{"entity": "location", "role": "origin"} to [Tokyo]{"entity": "location", "role": "destination"} on [12/31/2023]{"entity": "date_time"}
+    - I want to explore [Shanghai]{"entity": "location", "role": "origin"} and [Beijing]{"entity": "location", "role": "destination"} on [03/01/2024]{"entity": "date_time"}
+    - I'm looking to travel from [Singapore]{"entity": "location", "role": "origin"} to [Bangkok]{"entity": "location", "role": "destination"} on [06/05/2024]{"entity": "date_time"}
+    - I want to plan a journey from [Kuala Lumpur]{"entity": "location", "role": "origin"} to [Phuket]{"entity": "location", "role": "destination"} on [09/12/2024]{"entity": "date_time"}
+    - I'm dreaming of going from [Mumbai]{"entity": "location", "role": "origin"} to [Dubai]{"entity": "location", "role": "destination"} on [01/05/2025]{"entity": "date_time"}
+    - I want to take off from [Tokyo]{"entity": "location", "role": "origin"} and land in [Seoul]{"entity": "location", "role": "destination"} on [04/22/2025]{"entity": "date_time"}
+    - I'm planning to travel from [Bangalore]{"entity": "location", "role": "origin"} to [Hong Kong]{"entity": "location", "role": "destination"} on [08/08/2025]{"entity": "date_time"}
+    - Let's plan a trip from [Singapore]{"entity": "location", "role": "origin"} to [Tokyo]{"entity": "location", "role": "destination"} on [05/25/2023]{"entity": "date_time"}
+    - We should take a trip from [Bangkok]{"entity": "location", "role": "origin"} to [Seoul]{"entity": "location", "role": "destination"} on [07/15/2023]{"entity": "date_time"}
+    - Let's fly from [Kuala Lumpur]{"entity": "location", "role": "origin"} to [Shanghai]{"entity": "location", "role": "destination"} on [10/10/2023]{"entity": "date_time"}
+    - We want to go from [Tokyo]{"entity": "location", "role": "origin"} to [Sydney]{"entity": "location", "role": "destination"} on [12/31/2023]{"entity": "date_time"}
+    - Let's plan a trip from [Hong Kong]{"entity": "location", "role": "origin"} to [Bangkok]{"entity": "location", "role": "destination"} on [03/01/2024]{"entity": "date_time"}
+    - We should take a trip from [Mumbai]{"entity": "location", "role": "origin"} to [Dubai]{"entity": "location", "role": "destination"} on [06/05/2024]{"entity": "date_time"}
+    - Let's fly from [Jakarta]{"entity": "location", "role": "origin"} to [Manila]{"entity": "location", "role": "destination"} on [09/12/2024]{"entity": "date_time"}
+    - We want to go from [Bangalore]{"entity": "location", "role": "origin"} to [Beijing]{"entity": "location", "role": "destination"} on [01/05/2025]{"entity": "date_time"}
+    - Let's plan a trip from [Hanoi]{"entity": "location", "role": "origin"} to [Singapore]{"entity": "location", "role": "destination"} on [04/22/2025]{"entity": "date_time"}
+    - We should take a trip from [Seoul]{"entity": "location", "role": "origin"} to [Shanghai]{"entity": "location", "role": "destination"} on [08/08/2025]{"entity": "date_time"}
+    - Let's fly to [London]{"entity": "location", "role": "destination"} on [05/25/2023]{"entity": "date_time"}
+    - Let's fly to [Paris]{"entity": "location", "role": "destination"} on [07/15/2023]{"entity": "date_time"}
+    - Let's fly to [New York City]{"entity": "location", "role": "destination"} on [10/10/2023]{"entity": "date_time"}
+    - Let's fly to [Sydney]{"entity": "location", "role": "destination"} on [12/31/2023]{"entity": "date_time"}
+    - Let's fly to [Tokyo]{"entity": "location", "role": "destination"} on [03/01/2024]{"entity": "date_time"}
+    - Let's fly to [Rio de Janeiro]{"entity": "location", "role": "destination"} on [06/05/2024]{"entity": "date_time"}
+    - Let's fly to [Barcelona]{"entity": "location", "role": "destination"} on [09/12/2024]{"entity": "date_time"}
+    - Let's fly to [Cape Town]{"entity": "location", "role": "destination"} on [01/05/2025]{"entity": "date_time"}
+    - Let's fly to [Munich]{"entity": "location", "role": "destination"} on [04/22/2025]{"entity": "date_time"}
+    - Let's fly to [Amsterdam]{"entity": "location", "role": "destination"} on [08/08/2025]{"entity": "date_time"}
+    - Let's fly to [Dubai]{"entity": "location", "role": "destination"} on [11/17/2025]{"entity": "date_time"}
+    - Depart from [Paris]{"entity": "location", "role": "origin"} on [07/15/2023]{"entity": "date_time"}
+    - Take off from [New York City]{"entity": "location", "role": "origin"} on [10/10/2023]{"entity": "date_time"}
+    - Leave from [Sydney]{"entity": "location", "role": "origin"} on [12/31/2023]{"entity": "date_time"}
+    - Fly out of [Tokyo]{"entity": "location", "role": "origin"} on [03/01/2024]{"entity": "date_time"}
+    - Departure from [Rio de Janeiro]{"entity": "location", "role": "origin"} on [06/05/2024]{"entity": "date_time"}
+    - Take off from [Barcelona]{"entity": "location", "role": "origin"} on [09/12/2024]{"entity": "date_time"}
+    - Fly out of [Cape Town]{"entity": "location", "role": "origin"} on [01/05/2025]{"entity": "date_time"}
+    - Leave from [Munich]{"entity": "location", "role": "origin"} on [04/22/2025]{"entity": "date_time"}
+    - Take off from [Amsterdam]{"entity": "location", "role": "origin"} on [08/08/2025]{"entity": "date_time"}
+    - Depart from [Dubai]{"entity": "location", "role": "origin"} on [11/17/2025]{"entity": "date_time"}
+    - Explore [London]{"entity": "location", "role": "destination"} on [05/25/2023]{"entity": "date_time"}
+    - Take a trip to [Paris]{"entity": "location", "role": "destination"} on [07/15/2023]{"entity": "date_time"}
+    - Visit [New York City]{"entity": "location", "role": "destination"} on [10/10/2023]{"entity": "date_time"}
+    - Experience [Sydney]{"entity": "location", "role": "destination"} on [12/31/2023]{"entity": "date_time"}
+    - Embark on a journey to [Tokyo]{"entity": "location", "role": "destination"} on [03/01/2024]{"entity": "date_time"}
+    - Discover [Rio de Janeiro]{"entity": "location", "role": "destination"} on [06/05/2024]{"entity": "date_time"}
+    - Take a vacation to [Barcelona]{"entity": "location", "role": "destination"} on [09/12/2024]{"entity": "date_time"}
+    - Plan a getaway to [Cape Town]{"entity": "location", "role": "destination"} on [01/05/2025]{"entity": "date_time"}
+    - Book a trip to [Munich]{"entity": "location", "role": "destination"} on [04/22/2025]{"entity": "date_time"}
+    - Arrange a visit to [Amsterdam]{"entity": "location", "role": "destination"} on [08/08/2025]{"entity": "date_time"}
+    - Take off to [Dubai]{"entity": "location", "role": "destination"} on [11/17/2025]{"entity": "date_time"}
     - [2023/05/10]{"entity": "date_time"}
     - from [Paris]{"entity": "location", "role": "origin"}
     - to [Beijin]{"entity": "location", "role": "destination"}
+    - from [Paris]{"entity": "location", "role": "origin"}
+    - to [Beijin]{"entity": "location", "role": "destination"}
+    - from [New York]{"entity": "location", "role": "origin"}
+    - to [Tokyo]{"entity": "location", "role": "destination"}
+    - from [London]{"entity": "location", "role": "origin"}
+    - to [Sydney]{"entity": "location", "role": "destination"}
+    - from [Los Angeles]{"entity": "location", "role": "origin"}
+    - to [Shanghai]{"entity": "location", "role": "destination"}
+    - from [Singapore]{"entity": "location", "role": "origin"}
+    - to [Dubai]{"entity": "location", "role": "destination"}
+    - from [Berlin]{"entity": "location", "role": "origin"}
+    - to [Moscow]{"entity": "location", "role": "destination"}
+    - from [Seoul]{"entity": "location", "role": "origin"}
+    - to [Tokyo]{"entity": "location", "role": "destination"}
+    - from [Dublin]{"entity": "location", "role": "origin"}
+    - to [San Francisco]{"entity": "location", "role": "destination"}
+    - from [Bangkok]{"entity": "location", "role": "origin"}
+    - to [Hanoi]{"entity": "location", "role": "destination"}
+    - from [Lima]{"entity": "location", "role": "origin"}
+    - to [Buenos Aires]{"entity": "location", "role": "destination"}
+    - from [Toronto]{"entity": "location", "role": "origin"}
+    - to [Vancouver]{"entity": "location", "role": "destination"}
+    - from [Rio de Janeiro]{"entity": "location", "role": "origin"}
+    - to [Sydney]{"entity": "location", "role": "destination"}
+    - from [Amsterdam]{"entity": "location", "role": "origin"}
+    - to [Copenhagen]{"entity": "location", "role": "destination"}
+    - from [Munich]{"entity": "location", "role": "origin"}
+    - to [Barcelona]{"entity": "location", "role": "destination"}
+    - from [Melbourne]{"entity": "location", "role": "origin"}
+    - to [Auckland]{"entity": "location", "role": "destination"}
+    - from [Dubai]{"entity": "location", "role": "origin"}
+    - to [New York]{"entity": "location", "role": "destination"}
+    - from [Rome]{"entity": "location", "role": "origin"}
+    - to [Athens]{"entity": "location", "role": "destination"}
+    - from [Stockholm]{"entity": "location", "role": "origin"}
+    - to [Helsinki]{"entity": "location", "role": "destination"}
+    - from [Mumbai]{"entity": "location", "role": "origin"}
+    - to [Hong Kong]{"entity": "location", "role": "destination"}
+    - from [Osaka]{"entity": "location", "role": "origin"}
+    - to [Singapore]{"entity": "location", "role": "destination"}
+    - from [Washington, D.C.]{"entity": "location", "role": "origin"}
+    - to [Miami]{"entity": "location", "role": "destination"}
+    - from [Cape Town]{"entity": "location", "role": "origin"}
+    - to [Nairobi]{"entity": "location", "role": "destination"}
+    - from [Lisbon]{"entity": "location", "role": "origin"}
+    - to [Paris]{"entity": "location", "role": "destination"}
+    - from [Shanghai]{"entity": "location", "role": "origin"}
+    - to [Seoul]{"entity": "location", "role": "destination"}
+    - from [Madrid]{"entity": "location", "role": "origin"}
+    - to [Venice]{"entity": "location", "role": "destination"}
+    - from [Sydney]{"entity": "location", "role": "origin"}
+
+
+    
+    
 
 - intent: hotel
   examples: |
