@@ -25,3 +25,153 @@ stories:
   steps:
     - intent: travel_stop
 
+- story: I want to travel from New York to London on 09/15/2023
+  steps:
+  - intent: travel
+    entities:
+    - location: New York
+      role: origin
+    - location: London
+      role: destination
+    - date_time: 09/15/2023
+
+- story: I am planning to go from Sydney to Paris on 12/01/2023
+  steps:
+  - intent: travel
+    entities:
+    - location: Sydney
+      role: origin
+    - location: Paris
+      role: destination
+    - date_time: 12/01/2023
+
+- story: I would like to book a trip from Los Angeles to Beijing on 06/20/2023
+  steps:
+  - intent: travel
+    entities:
+    - location: Los Angeles
+      role: origin
+    - location: Beijing
+      role: destination
+    - date_time: 06/20/2023
+
+- story: Can you help me plan a trip from Miami to Rome on 08/10/2023?
+  steps:
+  - intent: travel
+    entities:
+    - location: Miami
+      role: origin
+    - location: Rome
+      role: destination
+    - date_time: 08/10/2023
+
+- story: I am thinking about going from Vancouver to Barcelona on 10/05/2023
+  steps:
+  - intent: travel
+    entities:
+    - location: Vancouver
+      role: origin
+    - location: Barcelona
+      role: destination
+    - date_time: 10/05/2023
+
+
+- story: I'm looking to travel from Boston to Berlin on 07/01/2023
+  steps:
+  - intent: travel
+    entities:
+    - location: Boston
+      role: origin
+    - location: Berlin
+      role: destination
+    - date_time: 07/01/2023
+
+- story: I want to book a flight from San Francisco to Seoul on 11/10/2023
+  steps:
+  - intent: travel
+    entities:
+    - location: San Francisco
+      role: origin
+    - location: Seoul
+      role: destination
+    - date_time: 11/10/2023
+
+- story: I'm planning a trip from Chicago to Tokyo on 09/05/2023
+  steps:
+  - intent: travel
+    entities:
+    - location: Chicago
+      role: origin
+    - location: Tokyo
+      role: destination
+    - date_time: 09/05/2023
+
+- story: Can you help me find a way to get from Toronto to Madrid on 12/20/2023?
+  steps:
+  - intent: travel
+    entities:
+    - location: Toronto
+      role: origin
+    - location: Madrid
+      role: destination
+    - date_time: 12/20/2023
+
+- story: I'm thinking about traveling from Paris to Miami on 08/15/2023
+  steps:
+  - intent: travel
+    entities:
+    - location: Paris
+      role: origin
+    - location: Miami
+      role: destination
+    - date_time: 08/15/2023
+
+- story: I want to travel from Shanghai to Sydney on 06/10/2023
+  steps:
+  - intent: travel
+    entities:
+    - location: Shanghai
+      role: origin
+    - location: Sydney
+      role: destination
+    - date_time: 06/10/2023
+
+- story: I am planning to go from Rome to Los Angeles on 10/20/2023
+  steps:
+  - intent: travel
+    entities:
+    - location: Rome
+      role: origin
+    - location: Los Angeles
+      role: destination
+    - date_time: 10/20/2023
+
+- story: Can you help me book a trip from Tokyo to Vancouver on 11/15/2023?
+  steps:
+  - intent: travel
+    entities:
+    - location: Tokyo
+      role: origin
+    - location: Vancouver
+      role: destination
+    - date_time: 11/15/2023
+
+- story: I'm interested in traveling from Madrid to New York on 07/05/2023
+  steps:
+  - intent: travel
+    entities:
+    - location: Madrid
+      role: origin
+    - location: New York
+      role: destination
+    - date_time: 07/05/2023
+
+- story: I am considering traveling from London to Beijing on 09/01/2023
+  steps:
+  - intent: travel
+    entities:
+    - location: London
+      role: origin
+    - location: Beijing
+      role: destination
+    - date_time: 09/01/2023

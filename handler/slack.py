@@ -4,7 +4,6 @@ from slack_sdk.socket_mode.websocket_client import SocketModeClient
 from slack_sdk.web.async_client import AsyncWebClient
 from slack_sdk.socket_mode.aiohttp import SocketModeClient
 from slack_cleaner2 import *
-import asyncio
 
 
 class Slack:
@@ -19,7 +18,6 @@ class Slack:
                         web_client=AsyncWebClient(token=self.token)
                     )
         self.cleaner = SlackCleaner(self.admin_token)
-
     
     def clean_channel(self):
         for msg in self.cleaner.c[self.channelName].msgs(with_replies=True):
@@ -68,8 +66,10 @@ class Slack:
     async def post_message(self, msg):
         try:
             await self.client.web_client.chat_postMessage(
-                channel=os.getenv('SLACK_CHANNEL'),
+                channel=self.channelID,
                 text=msg
             )
         except Exception as e:
             logging.exception(str(repr(e)))
+
+    # async def send_flight_offers():
