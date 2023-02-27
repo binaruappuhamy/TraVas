@@ -294,7 +294,7 @@ class Search:
             print('Error:', e)
             return None
 
-    def search_restaurants(self, location_id):
+    def search_restaurants(self, state:State):
         name = list()
         num_reviews = list()
         rating = list()
@@ -303,6 +303,9 @@ class Search:
         restaurants = dict()
 
         try:
+            destination = state.get_entity("destination")
+            location_id = self.search_location_id(destination)
+            
             url = "https://worldwide-restaurants.p.rapidapi.com/search"
 
             payload = "language=en_US&limit=5&location_id=187791&currency=CAD"

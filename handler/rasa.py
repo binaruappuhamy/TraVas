@@ -36,6 +36,7 @@ class Rasa:
         intent_dict = {
             "flight": False,
             "hotel": False,
+            "restaurant": False,
             "stop": False
         }
         
