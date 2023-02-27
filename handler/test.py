@@ -20,8 +20,9 @@ def search_location_id(destination):
 
             print(body)
             print(type(body))
+            
 
-            location_id = body['results']['data'][0]['result_object'][0]['location_id']
+            location_id = body['results']['data'][0]['result_object']['location_id']
             print(location_id)
             return location_id
 
