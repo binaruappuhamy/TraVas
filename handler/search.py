@@ -9,6 +9,7 @@ import datetime
 import time
 import re
 import models.state as State
+import requests
 
 
 class Search:
@@ -24,6 +25,7 @@ class Search:
             logger=self.logger,
             log_level="info"
         )
+        self.rapidapi_key = os.getenv("X-RapidAPI-Key")
 
         self.date_range = 5
         self.load_airports()
@@ -264,7 +266,7 @@ class Search:
         except ResponseError as error:
             raise error
 
-    def search_location_id(destination):
+    def search_location_id(self, destination):
         try:
             url = "https://worldwide-restaurants.p.rapidapi.com/typeahead"
 
@@ -272,7 +274,7 @@ class Search:
             print(payload)
             headers = {
                 "content-type": "application/x-www-form-urlencoded",
-                "X-RapidAPI-Key": "08691c664dmsh172b54fbfcfb87cp1b3742jsn67b6f9936827",
+                "X-RapidAPI-Key": self.rapidapi_key,
                 "X-RapidAPI-Host": "worldwide-restaurants.p.rapidapi.com"
             }
 
@@ -292,7 +294,7 @@ class Search:
             print('Error:', e)
             return None
 
-    def search_restaurants(location_id):
+    def search_restaurants(self, location_id):
         name = list()
         num_reviews = list()
         rating = list()
@@ -308,7 +310,7 @@ class Search:
 
             headers = {
                 "content-type": "application/x-www-form-urlencoded",
-                "X-RapidAPI-Key": "08691c664dmsh172b54fbfcfb87cp1b3742jsn67b6f9936827",
+                "X-RapidAPI-Key": self.rapidapi_key,
                 "X-RapidAPI-Host": "worldwide-restaurants.p.rapidapi.com"
             }
 
