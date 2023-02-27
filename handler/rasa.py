@@ -59,6 +59,9 @@ class Rasa:
     
     def CheckHotelIntent(self):
         return self.NLP_dict["intent"]["name"] == "hotel"
+    
+    def CheckRestaurantIntent(self):
+        return self.NLP_dict["intent"]["name"] == "restaurant"
 
     # data: what rasa returns
     # returns bool, whether the reset flag is raised

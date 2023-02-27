@@ -36,6 +36,14 @@ nlu:
     - Look for a hotel with top-notch amenities
     - Book a hotel for an upcoming business trip
 
+- intent: restaurant
+  examples: |
+    - restaurants
+    - good food around there
+    - find some restaurants
+    - we should look for some good restaurants
+    - need to search for foods
+
 
 - intent: travel_stop
   examples: |
