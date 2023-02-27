@@ -28,6 +28,11 @@ async def send_flight_offers():
     post_msg = response if response else "No flight offers found."
     await SlackClient.post_message(post_msg)
 
+async def send_restaurant_info():
+    response = SearchClient.search_restaurants(StateContext)
+    post_msg = response if response else "No restaurants found"
+    await SlackClient.post_message(post_msg)
+
 
 async def process(client: SocketModeClient, req: SocketModeRequest):
     
@@ -58,6 +63,10 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
                 if StateContext.should_send_hotel_offers():
                     logger.debug("Sending hotel offers")
                     await send_hotel_offers()
+
+                if StateContext.should_send_restaurant_info():
+                    logger.debug("Sending restaurant info")
+                    await send_restaurant_info()
 
             except Exception as e:
                 logger.debug(e)
