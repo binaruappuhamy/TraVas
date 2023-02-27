@@ -298,7 +298,7 @@ class Search:
         if not restaurants:
             return None
         
-        message = []
+        message = ["These are some great options if you're looking for restaurants: \n"]
 
         retaurant_list_formatter = [
             "{index}. {restaurant_name}",
@@ -307,7 +307,7 @@ class Search:
             "\tRanking:\t{ranking}",
             "\tPrice Level:\t{price_level}"
         ]
-        
+
         for i in range(len(restaurants["name"])):
             restaurant_info = dict()
             restaurant_info["index"] = i+1
@@ -320,7 +320,7 @@ class Search:
             report = "\n".join(retaurant_list_formatter).format(**restaurant_info)
             message.append(report)
 
-        return message
+        return "\n\n".join(message)
 
     def search_restaurants(self, state:State):
         name = list()
@@ -362,7 +362,9 @@ class Search:
             restaurants["ranking"] = ranking
             restaurants["price_level"] = price_level
 
-            return restaurants
+            message = self.format_restaurant_info(restaurants)
+
+            return message
             
         except Exception as e:
             #self.logger.error(str(repr(e)))
