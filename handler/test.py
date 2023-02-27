@@ -67,6 +67,8 @@ def search_restaurants(location_id):
         restaurants["ranking"] = ranking
         restaurants["price_level"] = price_level
 
+        print(len(restaurants["name"]))
+        print(restaurants["name"][0])
         return restaurants
         
     except Exception as e:

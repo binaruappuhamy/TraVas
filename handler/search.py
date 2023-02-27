@@ -282,8 +282,8 @@ class Search:
 
             body = json.loads(response.text)
 
-            print(body)
-            print(type(body))
+            #print(body)
+            #print(type(body))
             
 
             location_id = body['results']['data'][0]['result_object']['location_id']
@@ -293,6 +293,34 @@ class Search:
         except Exception as e:
             print('Error:', e)
             return None
+        
+    def format_restaurant_info(self, restaurants):
+        if not restaurants:
+            return None
+        
+        message = []
+
+        retaurant_list_formatter = [
+            "{index}. {restaurant_name}",
+            "\tNumber of Reviews:\t{num_reviews}",
+            "\tRating:\t{rating}",
+            "\tRanking:\t{ranking}",
+            "\tPrice Level:\t{price_level}"
+        ]
+        
+        for i in range(len(restaurants["name"])):
+            restaurant_info = dict()
+            restaurant_info["index"] = i+1
+            restaurant_info["restaurant_name"] = restaurants["name"][i]
+            restaurant_info["num_reviews"] = restaurants["num_reviews"][i]
+            restaurant_info["rating"] = restaurants["rating"][i]
+            restaurant_info["ranking"] = restaurants["ranking"][i]
+            restaurant_info["price_level"] = restaurants["price_level"][i]
+
+            report = "\n".join(retaurant_list_formatter).format(**restaurant_info)
+            message.append(report)
+
+        return message
 
     def search_restaurants(self, state:State):
         name = list()
@@ -305,7 +333,7 @@ class Search:
         try:
             destination = state.get_entity("destination")
             location_id = self.search_location_id(destination)
-            
+
             url = "https://worldwide-restaurants.p.rapidapi.com/search"
 
             payload = "language=en_US&limit=5&location_id=187791&currency=CAD"
