@@ -12,7 +12,7 @@ class State:
 
     def reset(self):
         self.entity_dict = {
-            "origin": None,
+            "origin": "Toronto", #assume initial origin to Toronto (GPS data)
             "destination": None,
             "departure_date": None,
         }

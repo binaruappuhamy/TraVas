@@ -242,7 +242,7 @@ class Search:
             hotel_info_report = "\n".join(
                 hotel_offer_formatter).format(**hotel_info)
             hotel_message.append(hotel_info_report)
-
+        print(hotel_message)
         return "\n\n".join(hotel_message)
 
     def search_hotels(self, state: State):
@@ -256,11 +256,9 @@ class Search:
 
             if not city_code:
                 return None
-            
             response = self.amadeus.reference_data.locations.hotels.by_city.get(cityCode=city_code, ratings='5')
             hotel_ids = [hotel['hotelId'] for hotel in response.data]
             hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2', radius='100', checkInDate=date)
-
             return self.format_hotel_offers(hotel_offers.data)
 
         except ResponseError as error:
@@ -373,7 +371,14 @@ class Search:
 def main():
     load_dotenv()
     searchClient = Search()
-    print(searchClient.get_city_code("Tokyo"))
+    state = State.State()
+    state.entity_dict = {
+        "origin": "Toronto",
+        "destination": "Tokyo",
+        "departure_date": "2023-03-24",
+    }    
+    print(searchClient.search_restaurants(state))
+    # print(searchClient.get_city_code("Tokyo"))
     # print(searchClient.get_city_airports("Sydney"))
 
     # flight_info_report = searchClient.search_flights("Toronto", "Sydney", datetime.datetime(2023, 2, 20).date())
