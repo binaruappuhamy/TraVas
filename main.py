@@ -1,6 +1,7 @@
 import handler.slack as slack
 import handler.rasa as rasa
 import handler.search as search
+import models.state as state
 import logging
 from slack_sdk.socket_mode.aiohttp import SocketModeClient
 from slack_sdk.socket_mode.response import SocketModeResponse
@@ -15,21 +16,25 @@ logging.basicConfig(format="%(asctime)s;%(levelname)s;%(message)s")
 logger = logging.getLogger("MAIN_CONTROLLER")
 logger.setLevel(logging.DEBUG)
 
-entity_state = None
-run_search = False
-entity_dict = {
-    "origin": "Toronto", #default origin to Toronto or current location
-    "destination": None,
-    "departure_date": None, #datetime object
-}
 
-hotel_dict = {
-    "travel_intent": False,
-    "destination_codes": None
-}
+async def send_hotel_offers():
+    response = SearchClient.search_hotels(StateContext)
+    post_msg = response if response else "No hotel offers found."
+    await SlackClient.post_message(post_msg)
+
+
+async def send_flight_offers():
+    response = SearchClient.search_flights(StateContext)
+    post_msg = response if response else "No flight offers found."
+    await SlackClient.post_message(post_msg)
+
+async def send_restaurant_info():
+    response = SearchClient.search_restaurants(StateContext)
+    post_msg = response if response else "No restaurants found"
+    await SlackClient.post_message(post_msg)
+
 
 async def process(client: SocketModeClient, req: SocketModeRequest):
-    global entity_dict, run_search, entity_state
     
     if req.type == "events_api":
         # Acknowledge the request anyway
@@ -39,70 +44,58 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
 
         if req.payload["event"]["type"] == "message" and "client_msg_id" in req.payload["event"]:
             try:
+                # Receive message
                 msg_text = slack.Slack.parseMessageText(req.payload["event"])
                 logger.debug(f"Msg received '{msg_text}'!")
-                
-                rasaClient = rasa.Rasa()
-                if hotel_dict["travel_intent"] and rasaClient.CheckHotelIntent:
-                    hotel_dict["travel_intent"] == False 
-                    destination = entity_dict["destination"]
-                    departure_date = entity_dict["departure_date"]
-                    logger.debug(f"Booking hotels for '{destination}' on {departure_date}")
-                    response = searchClient.search_hotels(entity_dict["destination"], departure_date)
-                    if response:
-                        post_msg = response
-                    else:
-                        post_msg = "No hotel offers found."
-                        
-                    await client.web_client.chat_postMessage(
-                        channel=os.getenv('SLACK_CHANNEL'),
-                        text=post_msg
-                    )   
 
+                # Get intent and entities
+                entity_dict, intent_dict = RasaClient.classify(msg_text)
 
-                rasaClient.Classify(msg_text)
-                print(rasaClient.NLP_dict)
-                entity_dict, entity_state, run_search = rasaClient.get_entities(entity_dict, entity_state)
-                print("entity dict: ", entity_dict)
-                print("run search: ", run_search)
-                if run_search:
-                    response = searchClient.search_flights(**entity_dict)
-                    # Save some info for hotels
-                    hotel_dict["travel_intent"] = True
+                # Update state with new intent and entities
+                StateContext.update(entity_dict, intent_dict)
+                StateContext.printState()
 
-                    if response:
-                        post_msg = response
-                    else:
-                        post_msg = "No flight offers found."
-                    await client.web_client.chat_postMessage(
-                        channel=os.getenv('SLACK_CHANNEL'),
-                        text=post_msg
-                    )
+                # Send flight and hotel offers if appropriate
+                if StateContext.should_send_flight_offers():
+                    logger.debug("Sending flight offers")
+                    await send_flight_offers()
+                    
+                if StateContext.should_send_hotel_offers():
+                    logger.debug("Sending hotel offers")
+                    await send_hotel_offers()
+
+                if StateContext.should_send_restaurant_info():
+                    logger.debug("Sending restaurant info")
+                    await send_restaurant_info()
+
             except Exception as e:
-                logger.exception(str(repr(e)))
+                logger.debug(e)
+                print(e)
 
 
 # Use async method
 async def main():
     load_dotenv()
 
-    slackClient = slack.Slack()
-    slackClient.clean_channel()
-    await slackClient.post_message("I am listening!")
+    # Initialize globals
+    global SearchClient, RasaClient, StateContext, SlackClient
+    RasaClient = rasa.Rasa()
+    SlackClient = slack.Slack()
+    StateContext = state.State()
+    SearchClient = search.Search()
 
-    global searchClient
-    searchClient = search.Search()
+
+    SlackClient.clean_channel()
+    await SlackClient.post_message("I am listening!")
 
     # Add a new listener to receive messages from Slack
     # You can add more listeners like this
-    slackClient.client.socket_mode_request_listeners.append(process)
+    SlackClient.client.socket_mode_request_listeners.append(process)
     
     # Establish a WebSocket connection to the Socket Mode servers
-    await slackClient.client.connect()
+    await SlackClient.client.connect()
 
     # Just not to stop this process
     await asyncio.sleep(float("inf"))
 
-# You can go with other way to run it. This is just for easiness to try it out.
 asyncio.run(main())
-

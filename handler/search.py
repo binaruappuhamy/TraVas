@@ -8,6 +8,8 @@ import logging
 import datetime
 import time
 import re
+import models.state as State
+import requests
 
 
 class Search:
@@ -23,6 +25,7 @@ class Search:
             logger=self.logger,
             log_level="info"
         )
+        self.rapidapi_key = os.getenv("X-RapidAPI-Key")
 
         self.date_range = 5
         self.load_airports()
@@ -38,13 +41,8 @@ class Search:
         self.df_airports = self.df_airports.sort_values('city')
 
     def load_cities(self):
-        self.city_codes = {
-            "Sydney": "SYD",
-            "Tokyo": "TYO",
-            "Vancouver": "VAN",
-            "Paris": "PAR",
-            "London": "LON",
-        }
+        csv_path = os.path.join(os.path.dirname(__file__), '../data/city_codes.csv')
+        self.city_codes = pd.read_csv(csv_path)
 
     @staticmethod
     def format_duration(dur_str):
@@ -75,7 +73,8 @@ class Search:
         return self.df_airports.query("city=='{}'".format(city.title()))
 
     def get_city_code(self, city):
-        return self.city_codes.get(city)
+        city_code = self.city_codes.loc[self.city_codes['Location'] == city, 'CityCode'].iloc[0]
+        return city_code
 
     def get_airport_combinations(self, origin, destination):
         '''Get all combinations of airports of (origin, destination)'''
@@ -170,7 +169,7 @@ class Search:
 
         return "\n\n".join(flight_report)
 
-    def search_flights(self, origin, destination, departure_date):
+    def search_flights(self, state:State):
         '''
         Makes a request to amadeus to get the chapest flights
             origin: origin city name
@@ -178,6 +177,10 @@ class Search:
             departure date: the day you need to book the flight (YYYY-MM-DD)
             returns jsonified string of amadeus's response or None
         '''
+        origin = state.get_entity("origin")
+        destination = state.get_entity("destination")
+        departure_date = state.get_entity("departure_date")
+
         try:
             # Get the airport combinations in the departure & arrival cities (there can be multiple in each city)
             airport_pairs = self.get_airport_combinations(origin, destination)
@@ -242,31 +245,136 @@ class Search:
 
         return "\n\n".join(hotel_message)
 
-    def search_hotels(self, location, date):
+    def search_hotels(self, state: State):
         try:
             '''
             Get list of hotel offers by city code
             '''
+            city = state.get_entity("destination")
+            city_code = self.get_city_code(city)
+            date = state.get_entity("departure_date")
 
-            # Only a few cities are in the test data base... can't find IATA city codes at all
-            city_code = self.get_city_code(location)
             if not city_code:
                 return None
             
-            response = self.amadeus.reference_data.locations.hotels.by_city.get(
-                cityCode=city_code, ratings='5')
+            response = self.amadeus.reference_data.locations.hotels.by_city.get(cityCode=city_code, ratings='5')
             hotel_ids = [hotel['hotelId'] for hotel in response.data]
             hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2', radius='100', checkInDate=date)
-            # print(hotel_offers.data)
 
             return self.format_hotel_offers(hotel_offers.data)
 
         except ResponseError as error:
             raise error
 
+    def search_location_id(self, destination):
+        try:
+            url = "https://worldwide-restaurants.p.rapidapi.com/typeahead"
+
+            payload = "q=" + destination + "&language=en_US"
+            print(payload)
+            headers = {
+                "content-type": "application/x-www-form-urlencoded",
+                "X-RapidAPI-Key": self.rapidapi_key,
+                "X-RapidAPI-Host": "worldwide-restaurants.p.rapidapi.com"
+            }
+
+            response = requests.request("POST", url, data=payload, headers=headers)
+
+            body = json.loads(response.text)
+
+            #print(body)
+            #print(type(body))
+            
+
+            location_id = body['results']['data'][0]['result_object']['location_id']
+            print(location_id)
+            return location_id
+
+        except Exception as e:
+            print('Error:', e)
+            return None
+        
+    def format_restaurant_info(self, restaurants):
+        if not restaurants:
+            return None
+        
+        message = ["These are some great options if you're looking for restaurants: \n"]
+
+        retaurant_list_formatter = [
+            "{index}. {restaurant_name}",
+            "\tNumber of Reviews:\t{num_reviews}",
+            "\tRating:\t{rating}",
+            "\tRanking:\t{ranking}",
+            "\tPrice Level:\t{price_level}"
+        ]
+
+        for i in range(len(restaurants["name"])):
+            restaurant_info = dict()
+            restaurant_info["index"] = i+1
+            restaurant_info["restaurant_name"] = restaurants["name"][i]
+            restaurant_info["num_reviews"] = restaurants["num_reviews"][i]
+            restaurant_info["rating"] = restaurants["rating"][i]
+            restaurant_info["ranking"] = restaurants["ranking"][i]
+            restaurant_info["price_level"] = restaurants["price_level"][i]
+
+            report = "\n".join(retaurant_list_formatter).format(**restaurant_info)
+            message.append(report)
+
+        return "\n\n".join(message)
+
+    def search_restaurants(self, state:State):
+        name = list()
+        num_reviews = list()
+        rating = list()
+        ranking = list()
+        price_level = list()
+        restaurants = dict()
+
+        try:
+            destination = state.get_entity("destination")
+            location_id = self.search_location_id(destination)
+
+            url = "https://worldwide-restaurants.p.rapidapi.com/search"
+
+            payload = "language=en_US&limit=5&location_id=187791&currency=CAD"
+            payload = "language=en_US&limit=5&location_id=" + location_id + "&currency=CAD"
+
+            headers = {
+                "content-type": "application/x-www-form-urlencoded",
+                "X-RapidAPI-Key": self.rapidapi_key,
+                "X-RapidAPI-Host": "worldwide-restaurants.p.rapidapi.com"
+            }
+
+            response = requests.request("POST", url, data=payload, headers=headers)   
+
+            body = json.loads(response.text)     
+            
+            for i in range(5):
+                name.append(body['results']['data'][i]['name'])
+                num_reviews.append(body['results']['data'][i]['num_reviews'])
+                rating.append(body['results']['data'][i]['rating'])
+                ranking.append(body['results']['data'][i]['ranking'])
+                price_level.append(body['results']['data'][i]['price_level'])
+
+            restaurants["name"] = name
+            restaurants["num_reviews"] = num_reviews
+            restaurants["rating"] = rating
+            restaurants["ranking"] = ranking
+            restaurants["price_level"] = price_level
+
+            message = self.format_restaurant_info(restaurants)
+
+            return message
+            
+        except Exception as e:
+            #self.logger.error(str(repr(e)))
+            return None
+
 def main():
     load_dotenv()
     searchClient = Search()
+    print(searchClient.get_city_code("Tokyo"))
+    # print(searchClient.get_city_airports("Sydney"))
 
     # flight_info_report = searchClient.search_flights("Toronto", "Sydney", datetime.datetime(2023, 2, 20).date())
     # print(flight_info_report)
@@ -275,7 +383,7 @@ def main():
     # searchClient.amadeus.booking.flight_orders.post(flight_info, traveler)
 
     # Hotel search test
-    print(searchClient.search_hotels("NRT", "2023-05-01"))
+    # print(searchClient.search_hotels("Paris", "2023-02-20"))
 
 
 if __name__ == '__main__':
