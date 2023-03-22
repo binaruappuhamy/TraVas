@@ -20,18 +20,18 @@ logger.setLevel(logging.DEBUG)
 async def send_hotel_offers():
     response = SearchClient.search_hotels(StateContext)
     post_msg = response if response else "No hotel offers found."
-    await SlackClient.post_message(post_msg)
+    await SlackClient.update_pin_message(post_msg)
 
 
 async def send_flight_offers():
     response = SearchClient.search_flights(StateContext)
     post_msg = response if response else "No flight offers found."
-    await SlackClient.post_message(post_msg)
+    await SlackClient.update_pin_message(post_msg)
 
 async def send_restaurant_info():
     response = SearchClient.search_restaurants(StateContext)
     post_msg = response if response else "No restaurants found"
-    await SlackClient.post_message(post_msg)
+    await SlackClient.update_pin_message(post_msg)
 
 
 async def process(client: SocketModeClient, req: SocketModeRequest):
@@ -87,6 +87,12 @@ async def main():
 
     SlackClient.clean_channel()
     await SlackClient.post_message("I am listening!")
+
+    # #update pin msg
+    # await SlackClient.update_pin_message("I am updated!")
+    # #update and append to pinned
+    # await SlackClient.update_pin_message("I am updated again!", True)
+
 
     # Add a new listener to receive messages from Slack
     # You can add more listeners like this
