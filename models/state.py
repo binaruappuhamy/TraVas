@@ -12,13 +12,14 @@ class State:
 
     def reset(self):
         self.entity_dict = {
-            "origin": None,
+            "origin": "Toronto", #assume initial origin to Toronto (GPS data)
             "destination": None,
             "departure_date": None,
         }
         self.intent_dict = {
             "flight": False,
             "hotel": False,
+            "restaurant": False,
             "stop": False,
         }
     
@@ -72,4 +73,11 @@ class State:
 
         # send flights if below are true
         return flight_intent and destination and departure_date
+    
+    def should_send_restaurant_info(self):
+        restaurant_intent = self.get_intent("restaurant")
+        destination = self.get_entity("destination")
+
+        # send restaurants if below are true
+        return restaurant_intent and destination
 

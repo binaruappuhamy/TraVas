@@ -194,6 +194,14 @@ nlu:
     - Maybe we should search for some hotels that offer discounts on flights too.
     - In addition to flights, should we also look for available hotels?
 
+- intent: restaurant
+  examples: |
+    - restaurants
+    - good food around there
+    - find some restaurants
+    - we should look for some good restaurants
+    - need to search for foods
+
 
 - intent: stop
   examples: |

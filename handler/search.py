@@ -9,6 +9,7 @@ import datetime
 import time
 import re
 import models.state as State
+import requests
 
 
 class Search:
@@ -24,6 +25,7 @@ class Search:
             logger=self.logger,
             log_level="info"
         )
+        self.rapidapi_key = os.getenv("X-RapidAPI-Key")
 
         self.date_range = 5
         self.load_airports()
@@ -240,7 +242,7 @@ class Search:
             hotel_info_report = "\n".join(
                 hotel_offer_formatter).format(**hotel_info)
             hotel_message.append(hotel_info_report)
-
+        print(hotel_message)
         return "\n\n".join(hotel_message)
 
     def search_hotels(self, state: State):
@@ -254,20 +256,129 @@ class Search:
 
             if not city_code:
                 return None
-            
             response = self.amadeus.reference_data.locations.hotels.by_city.get(cityCode=city_code, ratings='5')
             hotel_ids = [hotel['hotelId'] for hotel in response.data]
             hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2', radius='100', checkInDate=date)
-
             return self.format_hotel_offers(hotel_offers.data)
 
         except ResponseError as error:
             raise error
 
+    def search_location_id(self, destination):
+        try:
+            url = "https://worldwide-restaurants.p.rapidapi.com/typeahead"
+
+            payload = "q=" + destination + "&language=en_US"
+            print(payload)
+            headers = {
+                "content-type": "application/x-www-form-urlencoded",
+                "X-RapidAPI-Key": self.rapidapi_key,
+                "X-RapidAPI-Host": "worldwide-restaurants.p.rapidapi.com"
+            }
+
+            response = requests.request("POST", url, data=payload, headers=headers)
+
+            body = json.loads(response.text)
+
+            #print(body)
+            #print(type(body))
+            
+
+            location_id = body['results']['data'][0]['result_object']['location_id']
+            print(location_id)
+            return location_id
+
+        except Exception as e:
+            print('Error:', e)
+            return None
+        
+    def format_restaurant_info(self, restaurants):
+        if not restaurants:
+            return None
+        
+        message = ["These are some great options if you're looking for restaurants: \n"]
+
+        retaurant_list_formatter = [
+            "{index}. {restaurant_name}",
+            "\tNumber of Reviews:\t{num_reviews}",
+            "\tRating:\t{rating}",
+            "\tRanking:\t{ranking}",
+            "\tPrice Level:\t{price_level}"
+        ]
+
+        for i in range(len(restaurants["name"])):
+            restaurant_info = dict()
+            restaurant_info["index"] = i+1
+            restaurant_info["restaurant_name"] = restaurants["name"][i]
+            restaurant_info["num_reviews"] = restaurants["num_reviews"][i]
+            restaurant_info["rating"] = restaurants["rating"][i]
+            restaurant_info["ranking"] = restaurants["ranking"][i]
+            restaurant_info["price_level"] = restaurants["price_level"][i]
+
+            report = "\n".join(retaurant_list_formatter).format(**restaurant_info)
+            message.append(report)
+
+        return "\n\n".join(message)
+
+    def search_restaurants(self, state:State):
+        name = list()
+        num_reviews = list()
+        rating = list()
+        ranking = list()
+        price_level = list()
+        restaurants = dict()
+
+        try:
+            destination = state.get_entity("destination")
+            location_id = self.search_location_id(destination)
+
+            url = "https://worldwide-restaurants.p.rapidapi.com/search"
+
+            payload = "language=en_US&limit=5&location_id=187791&currency=CAD"
+            payload = "language=en_US&limit=5&location_id=" + location_id + "&currency=CAD"
+
+            headers = {
+                "content-type": "application/x-www-form-urlencoded",
+                "X-RapidAPI-Key": self.rapidapi_key,
+                "X-RapidAPI-Host": "worldwide-restaurants.p.rapidapi.com"
+            }
+
+            response = requests.request("POST", url, data=payload, headers=headers)   
+
+            body = json.loads(response.text)     
+            
+            for i in range(5):
+                name.append(body['results']['data'][i]['name'])
+                num_reviews.append(body['results']['data'][i]['num_reviews'])
+                rating.append(body['results']['data'][i]['rating'])
+                ranking.append(body['results']['data'][i]['ranking'])
+                price_level.append(body['results']['data'][i]['price_level'])
+
+            restaurants["name"] = name
+            restaurants["num_reviews"] = num_reviews
+            restaurants["rating"] = rating
+            restaurants["ranking"] = ranking
+            restaurants["price_level"] = price_level
+
+            message = self.format_restaurant_info(restaurants)
+
+            return message
+            
+        except Exception as e:
+            #self.logger.error(str(repr(e)))
+            return None
+
 def main():
     load_dotenv()
     searchClient = Search()
-    print(searchClient.get_city_code("Tokyo"))
+    state = State.State()
+    state.entity_dict = {
+        "origin": "Toronto",
+        "destination": "Tokyo",
+        "departure_date": "2023-03-24",
+    }    
+    print(searchClient.search_restaurants(state))
+    # print(searchClient.get_city_code("Tokyo"))
     # print(searchClient.get_city_airports("Sydney"))
 
     # flight_info_report = searchClient.search_flights("Toronto", "Sydney", datetime.datetime(2023, 2, 20).date())
