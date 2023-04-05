@@ -4,7 +4,7 @@ from slack_sdk.socket_mode.websocket_client import SocketModeClient
 from slack_sdk.web.async_client import AsyncWebClient
 from slack_sdk.socket_mode.aiohttp import SocketModeClient
 from slack_cleaner2 import *
-
+from datetime import timedelta, datetime
 
 class Slack:
     def __init__(self):
@@ -18,8 +18,12 @@ class Slack:
                         web_client=AsyncWebClient(token=self.token)
                     )
         self.cleaner = SlackCleaner(self.admin_token)
-        self.msgID = None
-        self.msgStr = None
+        self.msg = {
+            "id": None,
+            "str": "",
+            "ts": None,
+            "timeout": timedelta(minutes=5),
+        }
     
     def clean_channel(self):
         for msg in self.cleaner.c[self.channelName].msgs(with_replies=True):
@@ -72,28 +76,45 @@ class Slack:
                 text=msg
             )
             print(res)
-            self.msgID = res['ts']
+            self.msg['id'] = res['ts']
             await self.client.web_client.pins_add(
                 channel=self.channelID,
-                timestamp=self.msgID
+                timestamp=self.msg['id']
             )
 
         except Exception as e:
             logging.exception(str(repr(e)))
 
-    async def update_pin_message(self, msg, append=False):
+    async def update_pin_message(self, msg):
         try:
-            if append and self.msgStr:
-                post_msg = ("\n").join([self.msgStr, msg])
-            else:
+            ts_now = datetime.now()
+            if not self.msg['ts'] or (ts_now - self.msg['ts']) > self.msg['timeout']:
                 post_msg = msg
+                self.msg['ts'] = ts_now
+            else:
+                post_msg = ("\n").join([msg, self.msg['str']])
 
             await self.client.web_client.chat_update(
                 channel=self.channelID,
-                ts=self.msgID,
+                ts=self.msg['id'],
                 text=post_msg
             )
-            self.msgStr = post_msg
+            self.msg['str'] = post_msg
+
+        except Exception as e:
+            logging.exception(str(repr(e)))
+
+    async def reset_pin_message(self):
+        try:
+            post_msg = "I am listening!"
+            self.msg['ts'] = None
+
+            await self.client.web_client.chat_update(
+                channel=self.channelID,
+                ts=self.msg['id'],
+                text=post_msg
+            )
+            self.msg['str'] = ""
 
         except Exception as e:
             logging.exception(str(repr(e)))
