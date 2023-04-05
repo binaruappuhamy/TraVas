@@ -13,7 +13,7 @@ class Rasa:
         self.url = 'http://localhost:5005/model/parse'
         self.data = None
         
-    def classify(self, message):
+    def classify(self, message, StateContext):
         '''
         Returned data loaded into NLP dict
         '''
@@ -23,10 +23,19 @@ class Rasa:
         r = requests.post(url=self.url, data=data, headers=headers)
         data = json.loads(r.content.decode('utf8'))
         self.data = data
-
+        print(data)
         # parse entities and intents from response
-        return self.process_rasa_response(data)
+        return self.process_rasa_response(data, StateContext)
     
+    @staticmethod
+    def print_rasa_rep(entity_dict, intent_dict):
+        print("\nEntity received from Rasa:")
+        for key, value in entity_dict.items():
+            print(f"{key}: {value}")
+        print("\nIntent received from Rasa:")
+        for key, value in intent_dict.items():
+            print(f"{key}: {value}")
+
     @staticmethod
     def date_resolve(date_str):
         date_obj = None
@@ -65,7 +74,7 @@ class Rasa:
                 pass
         return date_obj
 
-    def process_rasa_response(self, data):
+    def process_rasa_response(self, data, StateContext):
         entity_dict = {
             "origin": None,
             "destination": None,
@@ -80,26 +89,38 @@ class Rasa:
         
         # Extract top intent
         if data['intent']['name'] in intent_dict and data['intent']['confidence'] > 0.9:
-            intent = data['intent']['name']
-            intent_dict[intent] = True
-        
+            if data['intent']['name'] != "stop" or (data['intent']['name'] == "stop" and 'Travas' in data['text']):
+                intent = data['intent']['name']
+                intent_dict[intent] = True
+
         # Extract entities
         for entity in data['entities']:
             if "role" in entity:
                 if entity['role'] == 'origin':
                     entity_dict["origin"] = entity['value'].title()
+                    StateContext.prev_entity_convo = "origin"
                 elif  entity['role'] == 'destination':
                     entity_dict["destination"] = entity['value'].title()
+                    StateContext.prev_entity_convo = "destination"
+                elif entity['role'] == 'correction':
+                    if StateContext.prev_entity_convo in ["origin", "destination"]: #don't need for date as you can learn latest date w/o context
+                        entity_dict[StateContext.prev_entity_convo]=entity['value'].title()
             elif entity['entity'] == 'DATE':
                 entity_dict["departure_date"] = self.date_resolve(entity['value'])
-        
+                StateContext.prev_entity_convo = "departure_date"
+
+        self.print_rasa_rep(entity_dict, intent_dict)
+
         return entity_dict, intent_dict
 
 # test code
 def main():
     # Use the following to see what the Rasa response looks like
     rasa = Rasa()
-    print(rasa.classify("I want to fly from Toronto to Tokyo on 05/25/2023"))
+    StateContext = None
+    # print(rasa.classify("I want to fly from Toronto to Tokyo on 05/25/2023"))
+    print(rasa.classify("What about sydney", StateContext))
+
 
     # print(rasa.data)
 
