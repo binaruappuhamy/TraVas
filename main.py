@@ -49,22 +49,29 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
                 logger.debug(f"Msg received '{msg_text}'!")
 
                 # Get intent and entities
-                entity_dict, intent_dict = RasaClient.classify(msg_text)
+                entity_dict, intent_dict = RasaClient.classify(msg_text, StateContext)
 
                 # Update state with new intent and entities
-                StateContext.update(entity_dict, intent_dict)
+                continue_flag = StateContext.update(entity_dict, intent_dict)
                 StateContext.printState()
+
+                #Reset pins on stop flag
+                if not continue_flag:
+                    await SlackClient.reset_pin_message()
 
                 # Send flight and hotel offers if appropriate
                 if StateContext.should_send_flight_offers():
+                    StateContext.served["flight"] = StateContext.entity_dict
                     logger.debug("Sending flight offers")
                     await send_flight_offers()
                     
                 if StateContext.should_send_hotel_offers():
+                    StateContext.served["hotel"] = StateContext.entity_dict
                     logger.debug("Sending hotel offers")
                     await send_hotel_offers()
 
                 if StateContext.should_send_restaurant_info():
+                    StateContext.served["restaurant"] = StateContext.entity_dict
                     logger.debug("Sending restaurant info")
                     await send_restaurant_info()
 
