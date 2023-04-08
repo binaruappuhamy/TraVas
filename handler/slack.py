@@ -135,7 +135,7 @@ class Slack:
                 ts=self.msg['id'],
                 text=post_msg
             )
-            self.msg['str'] = ""
+            self.msg['str'] = list()
 
         except Exception as e:
             logging.exception(str(repr(e)))
