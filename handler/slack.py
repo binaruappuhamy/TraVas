@@ -123,7 +123,7 @@ class Slack:
             else:
                 self.msg['str'].insert(0, msg_block)
 
-            await self.client.web_client.chat_postMessage(
+            await self.client.web_client.chat_update(
                 channel=self.channelID,
                 ts=self.msg['id'],
                 text="Block message failed",
