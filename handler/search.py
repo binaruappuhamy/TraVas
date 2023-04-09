@@ -168,6 +168,44 @@ class Search:
             flight_report.append(flight_info_report)
 
         return "\n\n".join(flight_report)
+    
+    def format_flight_offers_block(self, response, origin, destination, departure_date, origin_code, destination_code):
+        """
+        Using the following Format:
+        ----------------------------------
+        Carrier - Flight Price (Flight stops, Available Seats)
+            From: Origin
+            Deprating: Depart Time
+            To: Depart
+            Arriving: Arrive Time
+        """
+
+        flight_report_block = [origin, destination, str(departure_date), len(response.data)]
+
+        cheapest_flight_info_list = response.data
+        cheapest_flight_dict = response.result['dictionaries']
+
+        for index, info in enumerate(cheapest_flight_info_list):
+            flight_info = dict()
+            flight_info["index"] = index+1
+            flight_info["carrier"] = cheapest_flight_dict["carriers"][info["validatingAirlineCodes"][0]]
+            flight_info["curr"] = info["price"]["currency"]
+            flight_info["price"] = info["price"]["grandTotal"]
+            flight_info["num_stops"] = len(
+                info["itineraries"][0]["segments"])
+            flight_info["num_of_seats"] = info["numberOfBookableSeats"]
+            flight_info["origin"] = self.df_airports.query(
+                f"iata_code=='{origin_code}'").name.values[0]
+            flight_info["dest"] = self.df_airports.query(
+                f"iata_code=='{destination_code}'").name.values[0]
+            flight_info["dept_when"] = info["itineraries"][0]["segments"][0]["departure"]["at"].replace(
+                "T", " at ")
+            flight_info["duration"] = self.format_duration(
+                info["itineraries"][0]["duration"])
+
+            flight_report_block.append(flight_info)
+
+        return flight_report_block
 
     def search_flights(self, state:State):
         '''
@@ -194,7 +232,8 @@ class Search:
                     # Request flight offers from Amadeus
                     response = self.request_amadeus_flight_offers(origin_code, destination_code, date)
                     if response.data:
-                        formatted_message = self.format_flight_offers(response, origin, destination, departure_date, origin_code, destination_code)
+                        formatted_message = self.format_flight_offers_block(response, origin, destination, departure_date, origin_code, destination_code)
+
                         return formatted_message
 
         except Exception as e:

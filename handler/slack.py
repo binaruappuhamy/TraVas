@@ -106,7 +106,15 @@ class Slack:
         except Exception as e:
             logging.exception(str(repr(e)))
 
-    async def update_pin_message_block(self, msg_block):
+    async def update_pin_message_block_flights(self, msg_block):
+        origin = msg_block[0]
+        destination = msg_block[1]
+        departure_date = msg_block[2]
+        response_length = msg_block[3]
+        flight1 = msg_block[4]
+        flight2 = msg_block[5]
+        flight3 = msg_block[6]
+
         try:
             ts_now = datetime.now()
             if not self.msg['ts'] or (ts_now - self.msg['ts']) > self.msg['timeout']:
@@ -115,11 +123,239 @@ class Slack:
             else:
                 self.msg['str'].insert(0, msg_block)
 
-            await self.client.web_client.chat_update(
+            await self.client.web_client.chat_postMessage(
                 channel=self.channelID,
                 ts=self.msg['id'],
                 text="Block message failed",
-                blocks=self.msg['str']
+                blocks=[
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Here are Some Flight Offers",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "I believe that you are looking for flights from {} to {} on {}!".format(origin, destination, departure_date),
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "I suggest these top {} cheapest flights:".format(response_length),
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "{}. {} - {} {}".format(flight1["index"], flight1["carrier"], flight1["curr"], flight1["price"]),
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "{} Stops".format(flight1["num_stops"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "{} Available Seats".format(flight1["num_of_seats"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "From: {}".format(flight1["origin"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "To: {}".format(flight1["dest"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Departing: {}".format(flight1["dept_when"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Flight Time: {}".format(flight1["duration"])
+                        }
+                    ]
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "{}. {} - {} {}".format(flight2["index"], flight2["carrier"], flight2["curr"], flight2["price"]),
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "{} Stops".format(flight2["num_stops"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "{} Available Seats".format(flight2["num_of_seats"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "From: {}".format(flight2["origin"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "To: {}".format(flight2["dest"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Departing: {}".format(flight2["dept_when"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Flight Time: {}".format(flight2["duration"])
+                        }
+                    ]
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "{}. {} - {} {}".format(flight3["index"], flight3["carrier"], flight3["curr"], flight3["price"]),
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "{} Stops".format(flight3["num_stops"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "{} Available Seats".format(flight3["num_of_seats"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "From: {}".format(flight3["origin"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "To: {}".format(flight3["dest"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Departing: {}".format(flight3["dept_when"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Flight Time: {}".format(flight3["duration"])
+                        }
+                    ]
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Vote your best flight choice so everyone can see!"
+                    },
+                    "accessory": {
+                        "type": "static_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select a flight",
+                            "emoji": True
+                        },
+                        "options": [
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "{}. {} - {} {}".format(flight1["index"], flight1["carrier"], flight1["curr"], flight1["price"]),
+                                    "emoji": True
+                                },
+                                "value": "value-0"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "{}. {} - {} {}".format(flight2["index"], flight2["carrier"], flight2["curr"], flight2["price"]),
+                                    "emoji": True
+                                },
+                                "value": "value-1"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "{}. {} - {} {}".format(flight3["index"], flight3["carrier"], flight3["curr"], flight3["price"]),
+                                    "emoji": True
+                                },
+                                "value": "value-2"
+                            }
+                        ],
+                        "action_id": "static_select-action"
+                    }
+                },
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Filter preferred dates",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "datepicker",
+                            "initial_date": "{}".format(ts_now.date()),
+                            "placeholder": {
+                                "type": "plain_text",
+                                "text": "Select a Departure date",
+                                "emoji": True
+                            },
+                            "action_id": "actionId-0"
+                        },
+                        {
+                            "type": "datepicker",
+                            "initial_date": "{}".format(ts_now.date()),
+                            "placeholder": {
+                                "type": "plain_text",
+                                "text": "Select a Returning date",
+                                "emoji": True
+                            },
+                            "action_id": "actionId-1"
+                        }
+                    ]
+                }]
             )
 
         except Exception as e:
@@ -155,7 +391,7 @@ async def main():
         channel=SlackClient.channelID,
         text="dummy text",
         blocks=[
-{
+        {
 			"type": "header",
 			"text": {
 				"type": "plain_text",

@@ -26,7 +26,8 @@ async def send_hotel_offers():
 async def send_flight_offers():
     response = SearchClient.search_flights(StateContext)
     post_msg = response if response else "No flight offers found."
-    await SlackClient.update_pin_message(post_msg)
+    #print(post_msg)
+    await SlackClient.update_pin_message_block_flights(post_msg)
 
 async def send_restaurant_info():
     response = SearchClient.search_restaurants(StateContext)
