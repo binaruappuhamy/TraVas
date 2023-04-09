@@ -6,12 +6,14 @@ nlu:
     - travel
     - fly
     - airplane
-    - hotel booking
     - fly to
     - roadtrip
     - do you want to travel
     - do you want to go travel with me
     - go to
+    - I want to book a flight to Tokyo
+    - I'm planning a trip
+    - I want to fly to
     - I really want to go to [Berlin]{"entity": "location", "role": "destination"} from [Tokyo]{"entity": "location", "role": "origin"} on [May next year]{"entity": "date_time"}
     - Lets fly from [Toronto]{"entity": "location", "role": "origin"} to [Sydney]{"entity": "location", "role": "destination"}
     - I want to plan the flight on [May 01 2023]{"entity": "date_time"}
