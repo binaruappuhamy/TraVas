@@ -9,6 +9,7 @@ entities:
        roles:
        - origin
        - destination
+       - correction
 
 slots:
   origin:
@@ -23,6 +24,12 @@ slots:
     - type: from_entity
       entity: location
       role: destination
+  correction:
+    type: any
+    mappings:
+    - type: from_entity
+      entity: location
+      role: correction
 
 # responses:
 #   utter_greet:

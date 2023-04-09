@@ -145,10 +145,31 @@ nlu:
     - from [Madrid]{"entity": "location", "role": "origin"}
     - to [Venice]{"entity": "location", "role": "destination"}
     - from [Sydney]{"entity": "location", "role": "origin"}
+    - how about [Sydney]{"entity": "location", "role": "correction"} instead
+    - what about [Shanghai]{"entity": "location", "role": "correction"}
+    - I think [Singapore]{"entity": "location", "role": "correction"} is a better idea
+    - [Osaka]{"entity": "location", "role": "correction"}?
+    - [Toronto]{"entity": "location", "role": "correction"} though
+    - [Paris]{"entity": "location", "role": "correction"} is such a beautiful city. Have you ever seen pictures of it? 
+    - I think [Tokyo]{"entity": "location", "role": "correction"} has the coolest technology in the world. Have you ever heard of their robots? 
+    - I really want to try the food in [Bangkok]{"entity": "location", "role": "correction"}. Have you ever had Thai food before? 
+    - I heard [Seattle]{"entity": "location", "role": "correction"} has a great music scene.
+    - [Dubai]{"entity": "location", "role": "correction"} has some of the most impressive architecture in the world. Have you seen pictures of the Burj Khalifa? 
+    - I love the culture in [Rio de Janeiro]{"entity": "location", "role": "correction"}. Have you ever heard of their annual Carnival celebration? 
+    - [Munich]{"entity": "location", "role": "correction"} is known for its Oktoberfest celebrations. Have you ever been to a beer festival? 
+    - I think [Sydney]{"entity": "location", "role": "correction"} has some of the most beautiful beaches in the world. Have you ever been surfing? 
+    - Have you ever tried the pizza in [Naples]{"entity": "location", "role": "correction"}? It's supposed to be the best in the world. 
+    - [San Francisco]{"entity": "location", "role": "correction"} is famous for its Golden Gate Bridge. Have you seen any pictures of it? 
+    - [New Orleans]{"entity": "location", "role": "correction"} is known for its jazz music and delicious food. Have you ever been there during Mardi Gras? 
+    - I heard [Berlin]{"entity": "location", "role": "correction"} has some amazing street art. Have you ever seen any pictures of it? 
+    - I think [Vancouver]{"entity": "location", "role": "correction"} has the most beautiful natural scenery in the world. Have you ever been hiking there? 
+    - Have you ever heard of the [Great Barrier Reef]{"entity": "location", "role": "correction"} in Australia? It's one of the natural wonders of the world. 
+    - [Barcelona]{"entity": "location", "role": "correction"} has some of the most unique architecture in the world. Have you ever seen pictures of the works of Antoni Gaudi? 
+    - [Stockholm]{"entity": "location", "role": "correction"} is known for its design and fashion. Have you ever shopped for Scandinavian style clothes? 
+    - I heard [Montreal]{"entity": "location", "role": "correction"} has a great arts scene.
 
 
-    
-    
+
 
 - intent: hotel
   examples: |
