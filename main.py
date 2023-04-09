@@ -20,19 +20,17 @@ logger.setLevel(logging.DEBUG)
 async def send_hotel_offers():
     response = SearchClient.search_hotels(StateContext)
     post_msg = response if response else "No hotel offers found."
-    await SlackClient.update_pin_message(post_msg)
-
+    await SlackClient.update_pin_message_block_hotels(post_msg)
 
 async def send_flight_offers():
     response = SearchClient.search_flights(StateContext)
     post_msg = response if response else "No flight offers found."
-    #print(post_msg)
     await SlackClient.update_pin_message_block_flights(post_msg)
 
 async def send_restaurant_info():
     response = SearchClient.search_restaurants(StateContext)
-    post_msg = response if response else "No restaurants found"
-    await SlackClient.update_pin_message(post_msg)
+    post_msg = response if response else "No restaurant offers found."
+    await SlackClient.update_pin_message_block_restaurants(post_msg)
 
 
 async def process(client: SocketModeClient, req: SocketModeRequest):

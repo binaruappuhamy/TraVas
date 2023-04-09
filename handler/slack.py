@@ -107,32 +107,33 @@ class Slack:
             logging.exception(str(repr(e)))
 
     async def update_pin_message_block_flights(self, msg_block):
-        origin = msg_block[0]
-        destination = msg_block[1]
-        departure_date = msg_block[2]
-        response_length = msg_block[3]
-        flight1 = msg_block[4]
-        flight2 = msg_block[5]
-        flight3 = msg_block[6]
+        ts_now = datetime.now()
 
-        try:
-            ts_now = datetime.now()
-            if not self.msg['ts'] or (ts_now - self.msg['ts']) > self.msg['timeout']:
-                self.msg['str'] = [msg_block]
-                self.msg['ts'] = ts_now
-            else:
-                self.msg['str'].insert(0, msg_block)
+        if(msg_block == "No flight offers found."):
+            block=[
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "No flight offers found.",
+                        "emoji": True
+                    }
+                }]
+        else:
+            origin = msg_block[0]
+            destination = msg_block[1]
+            departure_date = msg_block[2]
+            response_length = msg_block[3]
+            flight1 = msg_block[4]
+            flight2 = msg_block[5]
+            flight3 = msg_block[6]
 
-            await self.client.web_client.chat_update(
-                channel=self.channelID,
-                ts=self.msg['id'],
-                text="Block message failed",
-                blocks=[
+            block=[
                 {
                     "type": "header",
                     "text": {
                         "type": "plain_text",
-                        "text": "Here are Some Flight Offers",
+                        "text": "Here are some Flight Offers",
                         "emoji": True
                     }
                 },
@@ -356,6 +357,413 @@ class Slack:
                         }
                     ]
                 }]
+
+        try:
+            if not self.msg['ts'] or (ts_now - self.msg['ts']) > self.msg['timeout']:
+                self.msg['str'] = [msg_block]
+                self.msg['ts'] = ts_now
+            else:
+                self.msg['str'].insert(0, msg_block)
+
+            await self.client.web_client.chat_update(
+                channel=self.channelID,
+                ts=self.msg['id'],
+                text="Block message failed",
+                blocks=block
+            )
+
+        except Exception as e:
+            logging.exception(str(repr(e)))
+
+
+    async def update_pin_message_block_hotels(self, msg_block):
+        ts_now = datetime.now()
+
+        if(msg_block == "No hotel offers found."):
+            block=[
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "No hotel offers found.",
+                        "emoji": True
+                    }
+                }]
+        else:
+            hotel1 = msg_block[0]
+            hotel2 = msg_block[1]
+            hotel3 = msg_block[2]
+
+            block=[
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Here are some Hotel Offers",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "My friend, I feel like these hotels would be nice on your trip, don't you think?",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "I suggest these top 3 cheapest hotels:",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "{}. {} - {} {}".format(hotel1["index"], hotel1["hotel_name"], hotel1["curr"], hotel1["price"]),
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "City: {}".format(hotel1["city"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Guests: {}".format(hotel1["guests"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Check In Date: {}".format(hotel1["check_in_date"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Description: {}".format(hotel1["description"])
+                        }
+                    ]
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "{}. {} - {} {}".format(hotel2["index"], hotel2["hotel_name"], hotel2["curr"], hotel2["price"]),
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "City: {}".format(hotel2["city"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Guests: {}".format(hotel2["guests"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Check In Date: {}".format(hotel2["check_in_date"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Description: {}".format(hotel2["description"])
+                        }
+                    ]
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "{}. {} - {} {}".format(hotel3["index"], hotel3["hotel_name"], hotel3["curr"], hotel3["price"]),
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "City: {}".format(hotel3["city"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Guests: {}".format(hotel3["guests"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Check In Date: {}".format(hotel3["check_in_date"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Description: {}".format(hotel3["description"])
+                        }
+                    ]
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Vote your best hotel choice so everyone can see!"
+                    },
+                    "accessory": {
+                        "type": "static_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select a hotel",
+                            "emoji": True
+                        },
+                        "options": [
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "{}. {} - {} {}".format(hotel1["index"], hotel1["hotel_name"], hotel1["curr"], hotel1["price"]),
+                                    "emoji": True
+                                },
+                                "value": "value-0"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "{}. {} - {} {}".format(hotel2["index"], hotel2["hotel_name"], hotel2["curr"], hotel2["price"]),
+                                    "emoji": True
+                                },
+                                "value": "value-1"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "{}. {} - {} {}".format(hotel3["index"], hotel3["hotel_name"], hotel3["curr"], hotel3["price"]),
+                                    "emoji": True
+                                },
+                                "value": "value-2"
+                            }
+                        ],
+                        "action_id": "static_select-action"
+                    }
+                },
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Filter preferred dates",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "datepicker",
+                            "initial_date": "{}".format(ts_now.date()),
+                            "placeholder": {
+                                "type": "plain_text",
+                                "text": "Select a Check-in date",
+                                "emoji": True
+                            },
+                            "action_id": "actionId-0"
+                        },
+                        {
+                            "type": "datepicker",
+                            "initial_date": "{}".format(ts_now.date()),
+                            "placeholder": {
+                                "type": "plain_text",
+                                "text": "Select a Check-out date",
+                                "emoji": True
+                            },
+                            "action_id": "actionId-1"
+                        }
+                    ]
+                }]
+
+        try:
+            if not self.msg['ts'] or (ts_now - self.msg['ts']) > self.msg['timeout']:
+                self.msg['str'] = [msg_block]
+                self.msg['ts'] = ts_now
+            else:
+                self.msg['str'].insert(0, msg_block)
+
+            await self.client.web_client.chat_update(
+                channel=self.channelID,
+                ts=self.msg['id'],
+                text="Block message failed",
+                blocks=block
+            )
+
+        except Exception as e:
+            logging.exception(str(repr(e)))
+
+
+    async def update_pin_message_block_restaurants(self, msg_block):
+        ts_now = datetime.now()
+
+        if(msg_block == "No restaurant offers found."):
+            block=[
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "No restaurant offers found.",
+                        "emoji": True
+                    }
+                }]
+        else:
+            restaurant1 = msg_block[0]
+            restaurant2 = msg_block[1]
+            restaurant3 = msg_block[2]
+
+            block=[
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Here are some Restaurant Offers",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "These are some great options if you're looking for restaurants:",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "I suggest these top 3 restaurants:",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "{}. {}".format(restaurant1["index"], restaurant1["restaurant_name"]),
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Number of Reviews: {}".format(restaurant1["num_reviews"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Rating: {}".format(restaurant1["rating"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Ranking: {}".format(restaurant1["ranking"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Price Level: {}".format(restaurant1["price_level"])
+                        }
+                    ]
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "{}. {}".format(restaurant2["index"], restaurant2["restaurant_name"]),
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Number of Reviews: {}".format(restaurant2["num_reviews"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Rating: {}".format(restaurant2["rating"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Ranking: {}".format(restaurant2["ranking"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Price Level: {}".format(restaurant2["price_level"])
+                        }
+                    ]
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "{}. {}".format(restaurant3["index"], restaurant3["restaurant_name"]),
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Number of Reviews: {}".format(restaurant3["num_reviews"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Rating: {}".format(restaurant3["rating"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Ranking: {}".format(restaurant3["ranking"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Price Level: {}".format(restaurant3["price_level"])
+                        }
+                    ]
+                }]
+
+        try:
+            if not self.msg['ts'] or (ts_now - self.msg['ts']) > self.msg['timeout']:
+                self.msg['str'] = [msg_block]
+                self.msg['ts'] = ts_now
+            else:
+                self.msg['str'].insert(0, msg_block)
+
+            await self.client.web_client.chat_update(
+                channel=self.channelID,
+                ts=self.msg['id'],
+                text="Block message failed",
+                blocks=block
             )
 
         except Exception as e:

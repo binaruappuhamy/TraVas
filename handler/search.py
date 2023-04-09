@@ -283,6 +283,36 @@ class Search:
             hotel_message.append(hotel_info_report)
         print(hotel_message)
         return "\n\n".join(hotel_message)
+    
+    def format_hotel_offers_block(self, hotel_offers_list):
+        if not hotel_offers_list:
+            return None
+
+        hotel_message = []
+
+        for index, info in enumerate(hotel_offers_list):
+            hotel_info = dict()
+            hotel_info["index"] = index+1
+            hotel_info["hotel_name"] = info["hotel"]["name"]
+            hotel_info["city"] = info["hotel"]["cityCode"]
+
+            # Gets the first offer - too lazy to code the other ones
+            first_offer = info["offers"][0]
+
+            hotel_info["curr"] = first_offer["price"]["currency"]
+            hotel_info["price"] = first_offer["price"]["total"]
+            
+            hotel_info["guests"] = first_offer["guests"]["adults"]
+            hotel_info["check_in_date"] = first_offer["checkInDate"]
+            if first_offer["room"]["description"]:
+                # remove escaped characters
+                hotel_info["description"] = first_offer["room"]["description"]["text"].replace("\n", ", ").strip()
+            else:
+                hotel_info["description"] = "No Description"
+
+            hotel_message.append(hotel_info)
+
+        return hotel_message
 
     def search_hotels(self, state: State):
         try:
@@ -298,7 +328,7 @@ class Search:
             response = self.amadeus.reference_data.locations.hotels.by_city.get(cityCode=city_code, ratings='5')
             hotel_ids = [hotel['hotelId'] for hotel in response.data]
             hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2', radius='100', checkInDate=date)
-            return self.format_hotel_offers(hotel_offers.data)
+            return self.format_hotel_offers_block(hotel_offers.data)
 
         except ResponseError as error:
             raise error
@@ -358,6 +388,25 @@ class Search:
             message.append(report)
 
         return "\n\n".join(message)
+    
+    def format_restaurant_info_block(self, restaurants):
+        if not restaurants:
+            return None
+        
+        message = []
+
+        for i in range(len(restaurants["name"])):
+            restaurant_info = dict()
+            restaurant_info["index"] = i+1
+            restaurant_info["restaurant_name"] = restaurants["name"][i]
+            restaurant_info["num_reviews"] = restaurants["num_reviews"][i]
+            restaurant_info["rating"] = restaurants["rating"][i]
+            restaurant_info["ranking"] = restaurants["ranking"][i]
+            restaurant_info["price_level"] = restaurants["price_level"][i]
+
+            message.append(restaurant_info)
+
+        return message
 
     def search_restaurants(self, state:State):
         name = list()
