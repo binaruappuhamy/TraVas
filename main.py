@@ -10,7 +10,7 @@ import asyncio
 import os
 from dotenv import load_dotenv
 import json
-
+import copy
 
 logging.basicConfig(format="%(asctime)s;%(levelname)s;%(message)s")
 logger = logging.getLogger("MAIN_CONTROLLER")
@@ -60,17 +60,17 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
 
                 # Send flight and hotel offers if appropriate
                 if StateContext.should_send_flight_offers():
-                    StateContext.served["flight"] = StateContext.entity_dict
+                    StateContext.served["flight"] = copy.deepcopy(StateContext.entity_dict)
                     logger.debug("Sending flight offers")
                     await send_flight_offers()
                     
                 if StateContext.should_send_hotel_offers():
-                    StateContext.served["hotel"] = StateContext.entity_dict
+                    StateContext.served["hotel"] = copy.deepcopy(StateContext.entity_dict)
                     logger.debug("Sending hotel offers")
                     await send_hotel_offers()
 
                 if StateContext.should_send_restaurant_info():
-                    StateContext.served["restaurant"] = StateContext.entity_dict
+                    StateContext.served["restaurant"] = copy.deepcopy(StateContext.entity_dict)
                     logger.debug("Sending restaurant info")
                     await send_restaurant_info()
 
