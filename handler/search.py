@@ -3,6 +3,11 @@ import logging
 import json
 import pandas as pd
 import os
+import sys
+
+# Add the parent directory of the current file to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from dotenv import load_dotenv
 import logging
 import datetime
