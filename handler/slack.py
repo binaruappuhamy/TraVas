@@ -7,6 +7,7 @@ from slack_cleaner2 import *
 from datetime import timedelta, datetime
 import asyncio
 
+block_dict = dict.fromkeys(["flight_block", "hotel_block", "restaurant_block"])
 
 class Slack:
     def __init__(self):
@@ -110,14 +111,17 @@ class Slack:
         ts_now = datetime.now()
 
         if(msg_block == "No flight offers found."):
-            block=[
+            flight_block=[
                 {
-                    "type": "section",
+                    "type": "header",
                     "text": {
                         "type": "plain_text",
                         "text": "No flight offers found.",
                         "emoji": True
                     }
+                },
+                {
+                    "type": "divider"
                 }]
         else:
             origin = msg_block[0]
@@ -128,7 +132,7 @@ class Slack:
             flight2 = msg_block[5]
             flight3 = msg_block[6]
 
-            block=[
+            flight_block=[
                 {
                     "type": "header",
                     "text": {
@@ -328,7 +332,7 @@ class Slack:
                     "type": "header",
                     "text": {
                         "type": "plain_text",
-                        "text": "Filter preferred dates",
+                        "text": "Filter preferred Flight Dates",
                         "emoji": True
                     }
                 },
@@ -356,7 +360,24 @@ class Slack:
                             "action_id": "actionId-1"
                         }
                     ]
+                },
+                {
+                    "type": "divider"
                 }]
+
+        block_dict["flight_block"] = flight_block
+
+        final_block = []
+
+        if(block_dict["flight_block"] != None):
+            for i in range(len(block_dict["flight_block"])):
+                final_block.append(block_dict["flight_block"][i])
+        if(block_dict["hotel_block"] != None):
+            for i in range(len(block_dict["hotel_block"])):
+                final_block.append(block_dict["hotel_block"][i])
+        if(block_dict["restaurant_block"] != None):
+            for i in range(len(block_dict["restaurant_block"])):
+                final_block.append(block_dict["restaurant_block"][i])
 
         try:
             if not self.msg['ts'] or (ts_now - self.msg['ts']) > self.msg['timeout']:
@@ -368,8 +389,8 @@ class Slack:
             await self.client.web_client.chat_update(
                 channel=self.channelID,
                 ts=self.msg['id'],
-                text="Block message failed",
-                blocks=block
+                text="Block message pinned",
+                blocks=final_block
             )
 
         except Exception as e:
@@ -380,21 +401,24 @@ class Slack:
         ts_now = datetime.now()
 
         if(msg_block == "No hotel offers found."):
-            block=[
+            hotel_block=[
                 {
-                    "type": "section",
+                    "type": "header",
                     "text": {
                         "type": "plain_text",
                         "text": "No hotel offers found.",
                         "emoji": True
                     }
+                },
+                {
+                    "type": "divider"
                 }]
         else:
             hotel1 = msg_block[0]
             hotel2 = msg_block[1]
             hotel3 = msg_block[2]
 
-            block=[
+            hotel_block=[
                 {
                     "type": "header",
                     "text": {
@@ -415,7 +439,7 @@ class Slack:
                     "type": "section",
                     "text": {
                         "type": "plain_text",
-                        "text": "I suggest these top 3 cheapest hotels:",
+                        "text": "I suggest these top 3 rated hotels:",
                         "emoji": True
                     }
                 },
@@ -564,7 +588,7 @@ class Slack:
                     "type": "header",
                     "text": {
                         "type": "plain_text",
-                        "text": "Filter preferred dates",
+                        "text": "Filter preferred Hotel Dates",
                         "emoji": True
                     }
                 },
@@ -592,7 +616,24 @@ class Slack:
                             "action_id": "actionId-1"
                         }
                     ]
+                },
+                {
+                    "type": "divider"
                 }]
+        
+        block_dict["hotel_block"] = hotel_block
+
+        final_block = []
+
+        if(block_dict["flight_block"] != None):
+            for i in range(len(block_dict["flight_block"])):
+                final_block.append(block_dict["flight_block"][i])
+        if(block_dict["hotel_block"] != None):
+            for i in range(len(block_dict["hotel_block"])):
+                final_block.append(block_dict["hotel_block"][i])
+        if(block_dict["restaurant_block"] != None):
+            for i in range(len(block_dict["restaurant_block"])):
+                final_block.append(block_dict["restaurant_block"][i])
 
         try:
             if not self.msg['ts'] or (ts_now - self.msg['ts']) > self.msg['timeout']:
@@ -604,8 +645,8 @@ class Slack:
             await self.client.web_client.chat_update(
                 channel=self.channelID,
                 ts=self.msg['id'],
-                text="Block message failed",
-                blocks=block
+                text="Block message pinned",
+                blocks=final_block
             )
 
         except Exception as e:
@@ -616,9 +657,9 @@ class Slack:
         ts_now = datetime.now()
 
         if(msg_block == "No restaurant offers found."):
-            block=[
+            restaurant_block=[
                 {
-                    "type": "section",
+                    "type": "header",
                     "text": {
                         "type": "plain_text",
                         "text": "No restaurant offers found.",
@@ -630,7 +671,7 @@ class Slack:
             restaurant2 = msg_block[1]
             restaurant3 = msg_block[2]
 
-            block=[
+            restaurant_block=[
                 {
                     "type": "header",
                     "text": {
@@ -751,6 +792,20 @@ class Slack:
                         }
                     ]
                 }]
+        
+        block_dict["restaurant_block"] = restaurant_block
+
+        final_block = []
+
+        if(block_dict["flight_block"] != None):
+            for i in range(len(block_dict["flight_block"])):
+                final_block.append(block_dict["flight_block"][i])
+        if(block_dict["hotel_block"] != None):
+            for i in range(len(block_dict["hotel_block"])):
+                final_block.append(block_dict["hotel_block"][i])
+        if(block_dict["restaurant_block"] != None):
+            for i in range(len(block_dict["restaurant_block"])):
+                final_block.append(block_dict["restaurant_block"][i])
 
         try:
             if not self.msg['ts'] or (ts_now - self.msg['ts']) > self.msg['timeout']:
@@ -762,14 +817,18 @@ class Slack:
             await self.client.web_client.chat_update(
                 channel=self.channelID,
                 ts=self.msg['id'],
-                text="Block message failed",
-                blocks=block
+                text="Block message pinned",
+                blocks=final_block
             )
 
         except Exception as e:
             logging.exception(str(repr(e)))
 
     async def reset_pin_message(self):
+        block_dict["flight_block"] = None
+        block_dict["hotel_block"] = None
+        block_dict["restaurant_block"] = None
+
         try:
             post_msg = "I am listening!"
             self.msg['ts'] = None
@@ -777,7 +836,15 @@ class Slack:
             await self.client.web_client.chat_update(
                 channel=self.channelID,
                 ts=self.msg['id'],
-                text=post_msg
+                text=post_msg,
+                blocks=[{
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": post_msg,
+                        "emoji": True
+                    }
+                }]
             )
             self.msg['str'] = list()
 

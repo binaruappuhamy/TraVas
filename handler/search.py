@@ -311,7 +311,7 @@ class Search:
                 hotel_info["description"] = "No Description"
 
             hotel_message.append(hotel_info)
-
+        
         return hotel_message
 
     def search_hotels(self, state: State):
