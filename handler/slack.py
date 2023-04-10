@@ -670,6 +670,8 @@ class Slack:
             restaurant1 = msg_block[0]
             restaurant2 = msg_block[1]
             restaurant3 = msg_block[2]
+            restaurant4 = msg_block[3]
+            restaurant5 = msg_block[4]
 
             restaurant_block=[
                 {
@@ -789,6 +791,70 @@ class Slack:
                             "type": "plain_text",
                             "emoji": True,
                             "text": "Price Level: {}".format(restaurant3["price_level"])
+                        }
+                    ]
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "{}. {}".format(restaurant4["index"], restaurant4["restaurant_name"]),
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Number of Reviews: {}".format(restaurant4["num_reviews"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Rating: {}".format(restaurant4["rating"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Ranking: {}".format(restaurant4["ranking"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Price Level: {}".format(restaurant4["price_level"])
+                        }
+                    ]
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "{}. {}".format(restaurant5["index"], restaurant5["restaurant_name"]),
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Number of Reviews: {}".format(restaurant5["num_reviews"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Rating: {}".format(restaurant5["rating"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Ranking: {}".format(restaurant5["ranking"])
+                        },
+                        {
+                            "type": "plain_text",
+                            "emoji": True,
+                            "text": "Price Level: {}".format(restaurant5["price_level"])
                         }
                     ]
                 }]

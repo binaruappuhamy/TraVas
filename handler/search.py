@@ -448,7 +448,7 @@ class Search:
             restaurants["ranking"] = ranking
             restaurants["price_level"] = price_level
 
-            message = self.format_restaurant_info(restaurants)
+            message = self.format_restaurant_info_block(restaurants)
 
             return message
             
