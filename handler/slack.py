@@ -129,9 +129,6 @@ class Slack:
             destination = msg_block[1]
             departure_date = msg_block[2]
             response_length = msg_block[3]
-            flight1 = msg_block[4]
-            flight2 = msg_block[5]
-            flight3 = msg_block[6]
 
             flight_block=[
                 {
@@ -160,133 +157,78 @@ class Slack:
                 },
                 {
                     "type": "divider"
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "text": "{}. {} - {} {}".format(flight1["index"], flight1["carrier"], flight1["curr"], flight1["price"]),
-                        "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "{} Stops".format(flight1["num_stops"])
+                }]
+
+            flights=[]
+            flight_options=[]
+
+            # If 3 or more results, show only Top 3
+            if response_length > 2:
+                stop = 3
+            else: # If less than 3 results
+                stop = response_length
+
+            for index in range(stop):
+                flights.append(msg_block[index+4])
+
+            for flight in flights:                
+                flight_block.append(
+                    {
+                        "type": "section",
+                        "text": {
+                            "text": "{}. {} - {} {}".format(flight["index"], flight["carrier"], flight["curr"], flight["price"]),
+                            "type": "mrkdwn"
                         },
-                        {
+                        "fields": [
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "{} Stops".format(flight["num_stops"])
+                            },
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "{} Available Seats".format(flight["num_of_seats"])
+                            },
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "From: {}".format(flight["origin"])
+                            },
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "To: {}".format(flight["dest"])
+                            },
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "Departing: {}".format(flight["dept_when"])
+                            },
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "Flight Time: {}".format(flight["duration"])
+                            }
+                        ]
+                    })
+                
+                flight_block.append(
+                    {
+                        "type": "divider"
+                    })
+
+                flight_options.append(
+                    {
+                        "text": {
                             "type": "plain_text",
-                            "emoji": True,
-                            "text": "{} Available Seats".format(flight1["num_of_seats"])
+                            "text": "{}. {} - {} {}".format(flight["index"], flight["carrier"], flight["curr"], flight["price"]),
+                            "emoji": True
                         },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "From: {}".format(flight1["origin"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "To: {}".format(flight1["dest"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Departing: {}".format(flight1["dept_when"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Flight Time: {}".format(flight1["duration"])
-                        }
-                    ]
-                },
-                {
-                    "type": "divider"
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "text": "{}. {} - {} {}".format(flight2["index"], flight2["carrier"], flight2["curr"], flight2["price"]),
-                        "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "{} Stops".format(flight2["num_stops"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "{} Available Seats".format(flight2["num_of_seats"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "From: {}".format(flight2["origin"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "To: {}".format(flight2["dest"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Departing: {}".format(flight2["dept_when"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Flight Time: {}".format(flight2["duration"])
-                        }
-                    ]
-                },
-                {
-                    "type": "divider"
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "text": "{}. {} - {} {}".format(flight3["index"], flight3["carrier"], flight3["curr"], flight3["price"]),
-                        "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "{} Stops".format(flight3["num_stops"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "{} Available Seats".format(flight3["num_of_seats"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "From: {}".format(flight3["origin"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "To: {}".format(flight3["dest"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Departing: {}".format(flight3["dept_when"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Flight Time: {}".format(flight3["duration"])
-                        }
-                    ]
-                },
-                {
-                    "type": "divider"
-                },
+                        "value": "value-{}".format(flight["index"]-1)
+                    })
+                
+            flight_block.append(
                 {
                     "type": "section",
                     "text": {
@@ -300,71 +242,15 @@ class Slack:
                             "text": "Select a flight",
                             "emoji": True
                         },
-                        "options": [
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "{}. {} - {} {}".format(flight1["index"], flight1["carrier"], flight1["curr"], flight1["price"]),
-                                    "emoji": True
-                                },
-                                "value": "value-0"
-                            },
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "{}. {} - {} {}".format(flight2["index"], flight2["carrier"], flight2["curr"], flight2["price"]),
-                                    "emoji": True
-                                },
-                                "value": "value-1"
-                            },
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "{}. {} - {} {}".format(flight3["index"], flight3["carrier"], flight3["curr"], flight3["price"]),
-                                    "emoji": True
-                                },
-                                "value": "value-2"
-                            }
-                        ],
+                        "options": flight_options,
                         "action_id": "static_select-action"
                     }
-                },
-                {
-                    "type": "header",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Filter preferred Flight Dates",
-                        "emoji": True
-                    }
-                },
-                {
-                    "type": "actions",
-                    "elements": [
-                        {
-                            "type": "datepicker",
-                            "initial_date": "{}".format(ts_now.date()),
-                            "placeholder": {
-                                "type": "plain_text",
-                                "text": "Select a Departure date",
-                                "emoji": True
-                            },
-                            "action_id": "actionId-0"
-                        },
-                        {
-                            "type": "datepicker",
-                            "initial_date": "{}".format(ts_now.date()),
-                            "placeholder": {
-                                "type": "plain_text",
-                                "text": "Select a Returning date",
-                                "emoji": True
-                            },
-                            "action_id": "actionId-1"
-                        }
-                    ]
-                },
+                })
+            
+            flight_block.append(
                 {
                     "type": "divider"
-                }]
+                })
 
         block_dict["flight_block"] = flight_block
 
@@ -415,10 +301,6 @@ class Slack:
                     "type": "divider"
                 }]
         else:
-            hotel1 = msg_block[0]
-            hotel2 = msg_block[1]
-            hotel3 = msg_block[2]
-
             hotel_block=[
                 {
                     "type": "header",
@@ -440,109 +322,74 @@ class Slack:
                     "type": "section",
                     "text": {
                         "type": "plain_text",
-                        "text": "I suggest these top 3 rated hotels:",
+                        "text": "I suggest these top {} rated hotels:".format(len(msg_block)),
                         "emoji": True
                     }
                 },
                 {
                     "type": "divider"
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "text": "{}. {} - {} {}".format(hotel1["index"], hotel1["hotel_name"], hotel1["curr"], hotel1["price"]),
-                        "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "City: {}".format(hotel1["city"])
+                }]
+            
+            hotels=[]
+            hotel_options=[]
+
+            # If 3 or more results, show only Top 3
+            if len(msg_block) > 2:
+                stop = 3
+            else: # If less than 3 results
+                stop = len(msg_block)
+
+            for index in range(stop):
+                hotels.append(msg_block[index])
+
+            for hotel in hotels:                
+                hotel_block.append(
+                    {
+                        "type": "section",
+                        "text": {
+                            "text": "{}. {} - {} {}".format(hotel["index"], hotel["hotel_name"], hotel["curr"], hotel["price"]),
+                            "type": "mrkdwn"
                         },
-                        {
+                        "fields": [
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "City: {}".format(hotel["city"])
+                            },
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "Guests: {}".format(hotel["guests"])
+                            },
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "Check In Date: {}".format(hotel["check_in_date"])
+                            },
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "Description: {}".format(hotel["description"])
+                            }
+                        ]
+                    })
+                
+                hotel_block.append(
+                    {
+                        "type": "divider"
+                    })
+
+                hotel_options.append(
+                    {
+                        "text": {
                             "type": "plain_text",
-                            "emoji": True,
-                            "text": "Guests: {}".format(hotel1["guests"])
+                            "text": "{}. {} - {} {}".format(hotel["index"], hotel["hotel_name"], hotel["curr"], hotel["price"]),
+                            "emoji": True
                         },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Check In Date: {}".format(hotel1["check_in_date"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Description: {}".format(hotel1["description"])
-                        }
-                    ]
-                },
-                {
-                    "type": "divider"
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "text": "{}. {} - {} {}".format(hotel2["index"], hotel2["hotel_name"], hotel2["curr"], hotel2["price"]),
-                        "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "City: {}".format(hotel2["city"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Guests: {}".format(hotel2["guests"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Check In Date: {}".format(hotel2["check_in_date"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Description: {}".format(hotel2["description"])
-                        }
-                    ]
-                },
-                {
-                    "type": "divider"
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "text": "{}. {} - {} {}".format(hotel3["index"], hotel3["hotel_name"], hotel3["curr"], hotel3["price"]),
-                        "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "City: {}".format(hotel3["city"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Guests: {}".format(hotel3["guests"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Check In Date: {}".format(hotel3["check_in_date"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Description: {}".format(hotel3["description"])
-                        }
-                    ]
-                },
-                {
-                    "type": "divider"
-                },
+                        "value": "value-{}".format(hotel["index"]-1)
+                    })
+                
+            hotel_block.append(
                 {
                     "type": "section",
                     "text": {
@@ -556,71 +403,15 @@ class Slack:
                             "text": "Select a hotel",
                             "emoji": True
                         },
-                        "options": [
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "{}. {} - {} {}".format(hotel1["index"], hotel1["hotel_name"], hotel1["curr"], hotel1["price"]),
-                                    "emoji": True
-                                },
-                                "value": "value-0"
-                            },
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "{}. {} - {} {}".format(hotel2["index"], hotel2["hotel_name"], hotel2["curr"], hotel2["price"]),
-                                    "emoji": True
-                                },
-                                "value": "value-1"
-                            },
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "{}. {} - {} {}".format(hotel3["index"], hotel3["hotel_name"], hotel3["curr"], hotel3["price"]),
-                                    "emoji": True
-                                },
-                                "value": "value-2"
-                            }
-                        ],
+                        "options": hotel_options,
                         "action_id": "static_select-action"
                     }
-                },
-                {
-                    "type": "header",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Filter preferred Hotel Dates",
-                        "emoji": True
-                    }
-                },
-                {
-                    "type": "actions",
-                    "elements": [
-                        {
-                            "type": "datepicker",
-                            "initial_date": "{}".format(ts_now.date()),
-                            "placeholder": {
-                                "type": "plain_text",
-                                "text": "Select a Check-in date",
-                                "emoji": True
-                            },
-                            "action_id": "actionId-0"
-                        },
-                        {
-                            "type": "datepicker",
-                            "initial_date": "{}".format(ts_now.date()),
-                            "placeholder": {
-                                "type": "plain_text",
-                                "text": "Select a Check-out date",
-                                "emoji": True
-                            },
-                            "action_id": "actionId-1"
-                        }
-                    ]
-                },
+                })
+            
+            hotel_block.append(
                 {
                     "type": "divider"
-                }]
+                })
         
         block_dict["hotel_block"] = hotel_block
 
@@ -668,12 +459,6 @@ class Slack:
                     }
                 }]
         else:
-            restaurant1 = msg_block[0]
-            restaurant2 = msg_block[1]
-            restaurant3 = msg_block[2]
-            restaurant4 = msg_block[3]
-            restaurant5 = msg_block[4]
-
             restaurant_block=[
                 {
                     "type": "header",
@@ -695,170 +480,61 @@ class Slack:
                     "type": "section",
                     "text": {
                         "type": "plain_text",
-                        "text": "I suggest these top 3 restaurants:",
+                        "text": "I suggest these top {} restaurants:".format(len(msg_block)),
                         "emoji": True
                     }
                 },
                 {
                     "type": "divider"
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "text": "{}. {}".format(restaurant1["index"], restaurant1["restaurant_name"]),
-                        "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Number of Reviews: {}".format(restaurant1["num_reviews"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Rating: {}".format(restaurant1["rating"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Ranking: {}".format(restaurant1["ranking"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Price Level: {}".format(restaurant1["price_level"])
-                        }
-                    ]
-                },
-                {
-                    "type": "divider"
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "text": "{}. {}".format(restaurant2["index"], restaurant2["restaurant_name"]),
-                        "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Number of Reviews: {}".format(restaurant2["num_reviews"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Rating: {}".format(restaurant2["rating"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Ranking: {}".format(restaurant2["ranking"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Price Level: {}".format(restaurant2["price_level"])
-                        }
-                    ]
-                },
-                {
-                    "type": "divider"
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "text": "{}. {}".format(restaurant3["index"], restaurant3["restaurant_name"]),
-                        "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Number of Reviews: {}".format(restaurant3["num_reviews"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Rating: {}".format(restaurant3["rating"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Ranking: {}".format(restaurant3["ranking"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Price Level: {}".format(restaurant3["price_level"])
-                        }
-                    ]
-                },
-                {
-                    "type": "divider"
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "text": "{}. {}".format(restaurant4["index"], restaurant4["restaurant_name"]),
-                        "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Number of Reviews: {}".format(restaurant4["num_reviews"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Rating: {}".format(restaurant4["rating"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Ranking: {}".format(restaurant4["ranking"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Price Level: {}".format(restaurant4["price_level"])
-                        }
-                    ]
-                },
-                {
-                    "type": "divider"
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "text": "{}. {}".format(restaurant5["index"], restaurant5["restaurant_name"]),
-                        "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Number of Reviews: {}".format(restaurant5["num_reviews"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Rating: {}".format(restaurant5["rating"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Ranking: {}".format(restaurant5["ranking"])
-                        },
-                        {
-                            "type": "plain_text",
-                            "emoji": True,
-                            "text": "Price Level: {}".format(restaurant5["price_level"])
-                        }
-                    ]
                 }]
+
+            restaurants=[]
+
+            # If 5 or more results, show only Top 5
+            if len(msg_block) > 4:
+                stop = 5
+            else: # If less than 3 results
+                stop = len(msg_block)
+
+            for index in range(stop):
+                restaurants.append(msg_block[index])
+
+            for restaurant in restaurants:                
+                restaurant_block.append(
+                    {
+                        "type": "section",
+                        "text": {
+                            "text": "{}. {}".format(restaurant["index"], restaurant["restaurant_name"]),
+                            "type": "mrkdwn"
+                        },
+                        "fields": [
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "Number of Reviews: {}".format(restaurant["num_reviews"])
+                            },
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "Rating: {}".format(restaurant["rating"])
+                            },
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "Ranking: {}".format(restaurant["ranking"])
+                            },
+                            {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "Price Level: {}".format(restaurant["price_level"])
+                            }
+                        ]
+                    })
+                
+                restaurant_block.append(
+                    {
+                        "type": "divider"
+                    })
         
         block_dict["restaurant_block"] = restaurant_block
 
