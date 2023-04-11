@@ -236,15 +236,21 @@ class Search:
                     
                     # Request flight offers from Amadeus
                     response = self.request_amadeus_flight_offers(origin_code, destination_code, date)
-                    if response.data:
-                        formatted_message = self.format_flight_offers_block(response, origin, destination, departure_date, origin_code, destination_code)
 
-                        return formatted_message
+                    try:
+                        if response.data:
+                            self.logger.error("Found flight offer")
+                            formatted_message = self.format_flight_offers_block(response, origin, destination, departure_date, origin_code, destination_code)
+
+                            return formatted_message
+                    except Exception as e:
+                        self.logger.error(str(repr(e)))
 
         except Exception as e:
             self.logger.error(str(repr(e)))
             return None
         else:
+            self.logger.error("No flight offers")
             return None
 
 
@@ -316,7 +322,7 @@ class Search:
                 hotel_info["description"] = "No Description"
 
             hotel_message.append(hotel_info)
-        
+        self.logger.debug("hotel offers format complete")
         return hotel_message
 
     def search_hotels(self, state: State):
@@ -333,6 +339,7 @@ class Search:
             response = self.amadeus.reference_data.locations.hotels.by_city.get(cityCode=city_code, ratings='5')
             hotel_ids = [hotel['hotelId'] for hotel in response.data]
             hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2', radius='100', checkInDate=date)
+            self.logger.debug(hotel_offers)
             return self.format_hotel_offers_block(hotel_offers.data)
 
         except ResponseError as error:

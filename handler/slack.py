@@ -6,6 +6,7 @@ from slack_sdk.socket_mode.aiohttp import SocketModeClient
 from slack_cleaner2 import *
 from datetime import timedelta, datetime
 import asyncio
+import sys
 
 block_dict = dict.fromkeys(["flight_block", "hotel_block", "restaurant_block"])
 
@@ -68,7 +69,7 @@ class Slack:
                                     if text_el["type"] == "text":
                                         processed_text = text_el["text"]   
         except Exception as e:
-            logging.exception(str(repr(e)))
+            logging.exception(str(repr(e)), exc_info=sys.exc_info())
         else:
             return processed_text
 
@@ -86,7 +87,7 @@ class Slack:
             )
 
         except Exception as e:
-            logging.exception(str(repr(e)))
+            logging.exception(str(repr(e)), exc_info=sys.exc_info())
 
     async def update_pin_message(self, msg):
         try:
@@ -105,7 +106,7 @@ class Slack:
             # self.msg['str'] = post_msg
 
         except Exception as e:
-            logging.exception(str(repr(e)))
+            logging.exception(str(repr(e)), exc_info=sys.exc_info())
 
     async def update_pin_message_block_flights(self, msg_block):
         ts_now = datetime.now()
@@ -394,7 +395,7 @@ class Slack:
             )
 
         except Exception as e:
-            logging.exception(str(repr(e)))
+            logging.exception(str(repr(e)), exc_info=sys.exc_info())
 
 
     async def update_pin_message_block_hotels(self, msg_block):
@@ -650,7 +651,7 @@ class Slack:
             )
 
         except Exception as e:
-            logging.exception(str(repr(e)))
+            logging.exception(str(repr(e)), exc_info=sys.exc_info())
 
 
     async def update_pin_message_block_restaurants(self, msg_block):
@@ -888,7 +889,7 @@ class Slack:
             )
 
         except Exception as e:
-            logging.exception(str(repr(e)))
+            logging.exception(str(repr(e)), exc_info=sys.exc_info())
 
     async def reset_pin_message(self):
         block_dict["flight_block"] = None
@@ -915,7 +916,7 @@ class Slack:
             self.msg['str'] = list()
 
         except Exception as e:
-            logging.exception(str(repr(e)))
+            logging.exception(str(repr(e)), exc_info=sys.exc_info())
 
 async def main():
     from dotenv import load_dotenv
