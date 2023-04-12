@@ -3,6 +3,11 @@ import logging
 import json
 import pandas as pd
 import os
+import sys
+
+# Add the parent directory of the current file to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from dotenv import load_dotenv
 import logging
 import datetime
@@ -168,6 +173,44 @@ class Search:
             flight_report.append(flight_info_report)
 
         return "\n\n".join(flight_report)
+    
+    def format_flight_offers_block(self, response, origin, destination, departure_date, origin_code, destination_code):
+        """
+        Using the following Format:
+        ----------------------------------
+        Carrier - Flight Price (Flight stops, Available Seats)
+            From: Origin
+            Deprating: Depart Time
+            To: Depart
+            Arriving: Arrive Time
+        """
+
+        flight_report_block = [origin, destination, str(departure_date), len(response.data)]
+
+        cheapest_flight_info_list = response.data
+        cheapest_flight_dict = response.result['dictionaries']
+
+        for index, info in enumerate(cheapest_flight_info_list):
+            flight_info = dict()
+            flight_info["index"] = index+1
+            flight_info["carrier"] = cheapest_flight_dict["carriers"][info["validatingAirlineCodes"][0]]
+            flight_info["curr"] = info["price"]["currency"]
+            flight_info["price"] = info["price"]["grandTotal"]
+            flight_info["num_stops"] = len(
+                info["itineraries"][0]["segments"])
+            flight_info["num_of_seats"] = info["numberOfBookableSeats"]
+            flight_info["origin"] = self.df_airports.query(
+                f"iata_code=='{origin_code}'").name.values[0]
+            flight_info["dest"] = self.df_airports.query(
+                f"iata_code=='{destination_code}'").name.values[0]
+            flight_info["dept_when"] = info["itineraries"][0]["segments"][0]["departure"]["at"].replace(
+                "T", " at ")
+            flight_info["duration"] = self.format_duration(
+                info["itineraries"][0]["duration"])
+
+            flight_report_block.append(flight_info)
+
+        return flight_report_block
 
     def search_flights(self, state:State):
         '''
@@ -193,14 +236,21 @@ class Search:
                     
                     # Request flight offers from Amadeus
                     response = self.request_amadeus_flight_offers(origin_code, destination_code, date)
-                    if response.data:
-                        formatted_message = self.format_flight_offers(response, origin, destination, departure_date, origin_code, destination_code)
-                        return formatted_message
+
+                    try:
+                        if response.data:
+                            self.logger.error("Found flight offer")
+                            formatted_message = self.format_flight_offers_block(response, origin, destination, departure_date, origin_code, destination_code)
+
+                            return formatted_message
+                    except Exception as e:
+                        self.logger.error(str(repr(e)))
 
         except Exception as e:
             self.logger.error(str(repr(e)))
             return None
         else:
+            self.logger.error("No flight offers")
             return None
 
 
@@ -244,6 +294,36 @@ class Search:
             hotel_message.append(hotel_info_report)
         print(hotel_message)
         return "\n\n".join(hotel_message)
+    
+    def format_hotel_offers_block(self, hotel_offers_list):
+        if not hotel_offers_list:
+            return None
+
+        hotel_message = []
+
+        for index, info in enumerate(hotel_offers_list):
+            hotel_info = dict()
+            hotel_info["index"] = index+1
+            hotel_info["hotel_name"] = info["hotel"]["name"]
+            hotel_info["city"] = info["hotel"]["cityCode"]
+
+            # Gets the first offer - too lazy to code the other ones
+            first_offer = info["offers"][0]
+
+            hotel_info["curr"] = first_offer["price"]["currency"]
+            hotel_info["price"] = first_offer["price"]["total"]
+            
+            hotel_info["guests"] = first_offer["guests"]["adults"]
+            hotel_info["check_in_date"] = first_offer["checkInDate"]
+            if first_offer["room"]["description"]:
+                # remove escaped characters
+                hotel_info["description"] = first_offer["room"]["description"]["text"].replace("\n", ", ").strip()
+            else:
+                hotel_info["description"] = "No Description"
+
+            hotel_message.append(hotel_info)
+        self.logger.debug("hotel offers format complete")
+        return hotel_message
 
     def search_hotels(self, state: State):
         try:
@@ -259,7 +339,8 @@ class Search:
             response = self.amadeus.reference_data.locations.hotels.by_city.get(cityCode=city_code, ratings='5')
             hotel_ids = [hotel['hotelId'] for hotel in response.data]
             hotel_offers = self.amadeus.shopping.hotel_offers_search.get(hotelIds=hotel_ids, adults='2', radius='100', checkInDate=date)
-            return self.format_hotel_offers(hotel_offers.data)
+            self.logger.debug(hotel_offers)
+            return self.format_hotel_offers_block(hotel_offers.data)
 
         except ResponseError as error:
             raise error
@@ -319,6 +400,25 @@ class Search:
             message.append(report)
 
         return "\n\n".join(message)
+    
+    def format_restaurant_info_block(self, restaurants):
+        if not restaurants:
+            return None
+        
+        message = []
+
+        for i in range(len(restaurants["name"])):
+            restaurant_info = dict()
+            restaurant_info["index"] = i+1
+            restaurant_info["restaurant_name"] = restaurants["name"][i]
+            restaurant_info["num_reviews"] = restaurants["num_reviews"][i]
+            restaurant_info["rating"] = restaurants["rating"][i]
+            restaurant_info["ranking"] = restaurants["ranking"][i]
+            restaurant_info["price_level"] = restaurants["price_level"][i]
+
+            message.append(restaurant_info)
+
+        return message
 
     def search_restaurants(self, state:State):
         name = list()
@@ -360,7 +460,7 @@ class Search:
             restaurants["ranking"] = ranking
             restaurants["price_level"] = price_level
 
-            message = self.format_restaurant_info(restaurants)
+            message = self.format_restaurant_info_block(restaurants)
 
             return message
             

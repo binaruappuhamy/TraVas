@@ -10,7 +10,7 @@ import asyncio
 import os
 from dotenv import load_dotenv
 import json
-
+import copy
 
 logging.basicConfig(format="%(asctime)s;%(levelname)s;%(message)s")
 logger = logging.getLogger("MAIN_CONTROLLER")
@@ -20,18 +20,17 @@ logger.setLevel(logging.DEBUG)
 async def send_hotel_offers():
     response = SearchClient.search_hotels(StateContext)
     post_msg = response if response else "No hotel offers found."
-    await SlackClient.update_pin_message(post_msg)
-
+    await SlackClient.update_pin_message_block_hotels(post_msg)
 
 async def send_flight_offers():
     response = SearchClient.search_flights(StateContext)
     post_msg = response if response else "No flight offers found."
-    await SlackClient.update_pin_message(post_msg)
+    await SlackClient.update_pin_message_block_flights(post_msg)
 
 async def send_restaurant_info():
     response = SearchClient.search_restaurants(StateContext)
-    post_msg = response if response else "No restaurants found"
-    await SlackClient.update_pin_message(post_msg)
+    post_msg = response if response else "No restaurant offers found."
+    await SlackClient.update_pin_message_block_restaurants(post_msg)
 
 
 async def process(client: SocketModeClient, req: SocketModeRequest):
@@ -61,17 +60,17 @@ async def process(client: SocketModeClient, req: SocketModeRequest):
 
                 # Send flight and hotel offers if appropriate
                 if StateContext.should_send_flight_offers():
-                    StateContext.served["flight"] = StateContext.entity_dict
+                    StateContext.served["flight"] = copy.deepcopy(StateContext.entity_dict)
                     logger.debug("Sending flight offers")
                     await send_flight_offers()
                     
                 if StateContext.should_send_hotel_offers():
-                    StateContext.served["hotel"] = StateContext.entity_dict
+                    StateContext.served["hotel"] = copy.deepcopy(StateContext.entity_dict)
                     logger.debug("Sending hotel offers")
                     await send_hotel_offers()
 
                 if StateContext.should_send_restaurant_info():
-                    StateContext.served["restaurant"] = StateContext.entity_dict
+                    StateContext.served["restaurant"] = copy.deepcopy(StateContext.entity_dict)
                     logger.debug("Sending restaurant info")
                     await send_restaurant_info()
 
