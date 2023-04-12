@@ -46,33 +46,33 @@ class Rasa:
         # Define a dictionary that maps phrases to start dates for each season
         vague_dates = {
             "jan": datetime.date(year, 1, 1),
-            "february": datetime.date(year, 2, 1),
+            "feb": datetime.date(year, 2, 1),
             "mar": datetime.date(year, 3, 1),
-            "april": datetime.date(year, 4, 1),
+            "apr": datetime.date(year, 4, 1),
             "may": datetime.date(year, 5, 1),
             "june": datetime.date(year, 6, 1),
             "july": datetime.date(year, 7, 1),
-            "august": datetime.date(year, 8, 1),
+            "aug": datetime.date(year, 8, 1),
             "sep": datetime.date(year, 9, 1),
-            "october": datetime.date(year, 10, 1),
-            "november": datetime.date(year, 11, 1),
+            "oct": datetime.date(year, 10, 1),
+            "nov": datetime.date(year, 11, 1),
             "dec": datetime.date(year, 12, 1),
             "next year": datetime.date(year+1, 1, 1),
             "the following year": datetime.date(year+1, 1, 1),
             "the upcoming year": datetime.date(year+1, 1, 1),
-            "next summer": datetime.date(year, 6, 1),
+            "next summer": datetime.date(year + 1, 6, 1),
             "the following summer": datetime.date(year, 6, 1),
             "the upcoming summer": datetime.date(year, 6, 1),
-            "next fall": datetime.date(year, 9, 1),
+            "next fall": datetime.date(year + 1, 9, 1),
             "the following fall": datetime.date(year, 9, 1),
             "the upcoming fall": datetime.date(year, 9, 1),
-            "next autumn": datetime.date(year, 9, 1),
+            "next autumn": datetime.date(year + 1, 9, 1),
             "the following autumn": datetime.date(year, 9, 1),
             "the upcoming autumn": datetime.date(year, 9, 1),
-            "next spring": datetime.date(year, 3, 1),
+            "next spring": datetime.date(year + 1, 3, 1),
             "the following spring": datetime.date(year, 3, 1),
             "the upcoming spring": datetime.date(year, 3, 1),
-            "next winter": datetime.date(year, 12, 1),
+            "next winter": datetime.date(year + 1, 12, 1),
             "the following winter": datetime.date(year, 12, 1),
             "the upcoming winter": datetime.date(year, 12, 1)
         }
@@ -102,9 +102,18 @@ class Rasa:
                 date_obj = today + \
                     datetime.timedelta((index - today.weekday()) % 7)
                 return date_obj
+            
+        for vague_date in self.vague_dates.keys():
+            if date_str.lower() in vague_date:
+                return self.vague_dates[vague_date]
+            else:
+                date_list = date_str.lower().split(" ")
+                for str in date_list:
+                    if str in vague_date:
+                      return self.vague_dates[vague_date]  
         
-        if date_str.lower() in self.vague_dates:
-            return self.vague_dates[date_str.lower()]
+        # if date_str.lower() in self.vague_dates:
+        #     return self.vague_dates[date_str.lower()]
         
 
         date_types = [
